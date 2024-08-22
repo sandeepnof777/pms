@@ -1,0 +1,16 @@
+<QBWCXML>
+<AppName>QuickBooks Connector</AppName>
+<AppID/>
+<AppURL>http://dev.pavementlayers.com/quickbooks/qbwc</AppURL>
+<AppDescription>QuickBooks Connector</AppDescription>
+<AppSupport>http://dev.pavementlayers.com/quickbooks/qbwc</AppSupport>
+<UserName>quickbooks</UserName>
+<OwnerID>{7a5a5965-f768-1104-c5f1-953274b7abe5}</OwnerID>
+<FileID>{10f2f0f1-47ef-87d4-4d1b-b1feb88dfb2a}</FileID>
+<QBType>QBFS</QBType>
+<Notify>false</Notify>
+<Scheduler>
+<RunEveryNMinutes>10</RunEveryNMinutes>
+</Scheduler>
+<IsReadOnly>false</IsReadOnly>
+</QBWCXML>

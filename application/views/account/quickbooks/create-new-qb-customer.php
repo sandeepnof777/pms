@@ -1,0 +1,1 @@
+<p><input type="radio" name="qbLinkId" value="new" /> Create a new QuickBooks customer.</p>

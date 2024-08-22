@@ -1,0 +1,3 @@
+
+<!-- <span title="<?php echo $proposal->statusText; ?>" class="tiptipright proposal_status_color_bar" style="background-color:#<?php echo $proposal->statusColor; ?>">&nbsp;</span> -->
+<input type="checkbox" class="groupSelect" data-proposal-id="<?php echo $proposal->proposalId; ?>" data-won="<?php echo ($proposal->win_date ? '1' : 0); ?>" data-is-sales="<?php echo ($proposal->is_sales==1 ? '1' : 0); ?>" />

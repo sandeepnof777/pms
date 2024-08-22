@@ -1,0 +1,60 @@
+{
+  "name": "pl/pms",
+  "description": "",
+  "config": {
+    "platform": {
+      "php": "7.4.16"
+    },
+    "allow-plugins": {
+      "kylekatarnls/update-helper": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "php-http/discovery": true
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "Pms\\": "src/"
+    }
+  },
+  "require": {
+    "doctrine/orm": "^2.17",
+    "sendgrid/sendgrid": "~6.0",
+    "geoip2/geoip2": "0.6.*",
+    "vube/google-visualization-php": ">=0.2",
+    "league/csv": "8.*",
+    "willdurand/geocoder": "^3.2",
+    "google/recaptcha": "~1.1",
+    "guzzlehttp/guzzle": "~6.1",
+    "intervention/image": "^2.3",
+    "dompdf/dompdf": "1.0.2",
+    "nesbot/carbon": "~1.18",
+    "google/apiclient": "^2.0",
+    "league/oauth2-google": "^2.0",
+    "storefactory/zoho-subscription-api":  ">=1.0.0",
+    "quickbooks/v3-php-sdk" : "6.0.1",
+    "vlucas/phpdotenv": "5.3.0",
+    "consolibyte/quickbooks": "3.6",
+    "ramsey/uuid" : "3.8.0",
+    "ircmaxell/random-lib" : "1.2.0",
+    "yidas/codeigniter-queue-worker": "^1.0",
+    "maykonn/codeigniter-predis": "^0.1.1",
+    "genius13/codeigniter-job-queue-redis" : "0.1",
+    "zohocrm/php-sdk-archive": "2.1.0",
+    "doctrine/annotations": "^1.4",
+    "php-http/guzzle6-adapter": "2.0.2",
+    "predis/predis": "1.1.7",
+    "rapidinjection/browser.php": "^1.9",
+    "ipdata/api-client": "^0.1.0",
+    "nyholm/psr7": "^1.4",
+    "symfony/http-client": "^5.3",
+    "sentry/sdk": "^3.1",
+    "doctrine/dbal": "^3.7",
+    "giggsey/libphonenumber-for-php": "^8.13"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "3.*",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
+    "phpstan/phpstan": "^0.12.99"
+  }
+}

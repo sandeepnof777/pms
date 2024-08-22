@@ -1,0 +1,1 @@
+<span class="companyStatus" id="<?php echo $company->companyId; ?>" style="display: block;"><?php echo $company->companyStatus; ?></span>

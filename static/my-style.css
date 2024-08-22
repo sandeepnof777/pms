@@ -1,0 +1,178 @@
+.nav-right{
+    /* width:0px!important; */
+    margin:0px!important;
+    padding:0px!important;
+}
+
+.proposal-setting .listResult{
+    margin-top: 7px!important;
+    margin-left:20px;
+}
+.proposal-setting .listResult li{
+    display: block;
+    text-align: left;
+    padding: 5px 10px 5px 5px;
+    line-height: 16px;
+    color: #777;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+    font-family: Arial, sans-serif;
+}
+.proposal-setting .listResult li a{ 
+   
+    color: #777;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+    font-family: Arial, sans-serif;
+}
+.nav-menu {
+    height: 770px;
+    /* border: 1px solid #ccc;
+    border-radius: 5px; */
+    }
+.main-account-setting{
+    width:952px!important;
+}  
+ 
+.proposal-setting .container a
+{
+    color:#777;
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+
+.proposal-setting .card {
+    border: 1px #ccc solid;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    border-radius: 5px;
+    width: 272px;
+     float: left;
+    margin-left: 33px;
+    margin-top: 15px;
+    height: 196px;
+ }
+
+.proposal-setting .card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.proposal-setting .header {
+    text-align: center;
+    font-size: 13px;
+    background: #000;
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+    border-radius: 5px 5px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 6px 10px;
+    background: #54575c url(images/content-box-header-darker.png) repeat-x top;
+    color: #e6e8eb;
+    font-weight: bold;
+}
+
+.proposal-setting .container {
+    padding: 10px;
+}
+
+
+.proposal-setting ul {
+list-style: none; /* Remove default list bullets */
+padding: 0;
+}
+
+.proposal-setting .card li {
+
+display: block;
+text-align: left;
+padding: 5px 10px 5px 5px;
+line-height: 16px;
+color: #777;
+font-weight: bold;
+transition: background-color 0.3s, color 0.3s;
+font-family: Arial, sans-serif;
+
+}
+
+.proposal-setting .card li a {
+    text-align: left;
+    color: #777;
+     font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    text-transform: capitalize;
+
+    }
+
+.proposal-setting .card li:hover {
+background-color: #F6F6F6;
+color: #000;
+cursor: pointer;
+}
+.proposal-setting .card li a:hover {
+     color: #000;
+     }
+
+    /* input search*/
+ 
+
+.account-item-search{
+width: 148px!important;margin-bottom: 6px!important;margin-top: 3px!important;border: 1px solid #ccc!important;border-radius: 5px!important; 
+}
+ 
+.filter-setting-error{
+ margin-top:28px;
+ /* margin-left:150px; */
+ font-size:24px;
+ text-align: center!important;
+ text-transform: capitalize;
+ }
+
+.parent-container {
+    display: flex;
+    margin-left:355px;
+   }
+
+   .nav-menu li.back-active {
+    position: relative;
+    padding-left: 20px;
+}
+
+.nav-menu li.back-active {
+    position: relative;
+    padding-left: 20px;
+}
+
+.nav-menu li.back-active::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 5;
+    top: 50%; /* Adjust the top property to vertically center the arrow */
+    transform: translateY(-50%); /* Center the arrow vertically */
+    width: 31px;
+    height: 30px;
+    background: url(images/nav-arrow-left.jpg) no-repeat left ;
+    /* Add any additional styles for the arrow image here */
+}
+
+li.head-child {
+    margin-left: 8px;
+}
+li.head-child a{
+font-weight: unset!important;
+}
+
+ li.head-parent{
+    font-weight: bold;
+    font-size: 13px!important;
+}
+
+.nav-menu li.back-active a {
+    background: #25AAE1;
+    color: #fff;
+}
+ 
+/* Add any additional styles for the li text here */
+
+#dialog-message .clearfix {
+    line-height: 2.1;
+}

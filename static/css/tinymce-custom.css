@@ -1,0 +1,14 @@
+    /*Hide original svg:*/
+    .tox-tbtn .tox-icon svg {
+        display: none!important;
+    }
+
+    /*Dimensions of svg icon:*/
+    .tox-tbtn[aria-label="Bold"] .tox-icon svg{
+        display: list-item;
+        list-style: none;
+        width: 18px!important;
+        height: 18px!important;
+    }
+
+    

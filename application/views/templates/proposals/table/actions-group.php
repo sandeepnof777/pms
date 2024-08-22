@@ -1,0 +1,1 @@
+<input type="checkbox" class="groupSelect" data-proposal-id="<?php echo $proposal->proposalId; ?>" />
