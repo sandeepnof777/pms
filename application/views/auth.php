@@ -8,7 +8,7 @@
             </div>
           
             <div class="box-content">
-                <form id="login-otp-form" action="<?php echo site_url('home/auth_check') ?>" method="post" class="validate">
+                <form id="login-otp-form"  class="validate">
                     <table class="boxed-table" cellpadding="0" cellspacing="0" width="100%">
                         <tr>
                             <td>
@@ -28,7 +28,7 @@
                         <tr class="even">
                             <td>
                                 
-                                <button type="submit"class="btn blue-button" id="loginBtn" style="width: 180px;left: 115px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
+                                <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 180px;left: 115px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
                                 <div id="otpResend"><a href="#">Resend OTP</a></div>
                              </td>
                         </tr>
@@ -83,7 +83,8 @@
         $("#otpResend").hide();
 
         $("#logging_error, #logging_in").hide();
-        $("#login-otp-form").submit(function () {
+        $("#AuthBtn").on("click", function (e) {
+            e.preventDefault(); // Prevent default form submission behavior
             $("#logging_in").show();
             $("#logging_error").hide();
             var remember = 0;
@@ -148,7 +149,7 @@ $("#otpResend").on("click", function (e) {
         },
         dataType: "json",
         success: function (data) {
-            if (data.success) {
+            if (data.auth) {
                 $("#logging_error").hide();
                 $("#logging_in").hide();
                 console.log("OTP sent successfully");
@@ -156,7 +157,7 @@ $("#otpResend").on("click", function (e) {
                 $("#msg_success").show();
 
             } else {
-                if (data.error) {
+                if (data.fail) {
                     $("#msg_success").hide();
                     $("#logging_error").hide();
                 }
@@ -172,10 +173,11 @@ $("#otpResend").on("click", function (e) {
 });
 
 setTimeout(function() {
+    $("#msg_error").hide();
     $("#msg_success").fadeOut(); // Hide the message after 5 seconds
     $("#msg_error").fadeOut();
     $("#logging_error").fadeOut();
-}, 5000); // 5000 milliseconds = 5 seconds
+}, 9000); // 5000 milliseconds = 5 seconds
 //otp resend close 
     });
 </script>

@@ -65,7 +65,6 @@ class Ajax extends MY_Controller
              {
                 $mobileNo = $account->getCellPhone();
                 $this->session->set_userdata('useremail', $this->input->post('email'));
-                $this->session->set_flashdata('success', 'Otp sent to your email id');
                 $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
                 $current_time = time(); // Get current time
                 $account->setEmailOtp($generated_otp);
@@ -81,6 +80,8 @@ class Ajax extends MY_Controller
                   $mobileOtpResult =  $this->sendMobileOtp($mobileNo,$generated_otp);
                   if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
                   {
+                    $this->session->set_flashdata('success', 'Otp sent to your mobile number');
+
                     echo json_encode(array(
                         'auth' => true,
                         'mobileAuth'=>true
@@ -91,11 +92,21 @@ class Ajax extends MY_Controller
                     ));
                   }
                }else{
-                    $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
+                      $this->session->set_flashdata('success', 'Otp sent to your email id');
+                   $emailOtpResult =  $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
+                   if($emailOtpResult)
+                   {
+                       echo json_encode(array(
+                           'auth' => true,
+                           'emailAuth'=>true
+                       ));
+                   }else{
                     echo json_encode(array(
-                        'auth' => true,
-                        'emailAuth'=>true
+                        'auth' => false,
+                        'emailAuth'=>false
                     ));
+
+                   }
                }
 
                 die;
@@ -33295,9 +33306,12 @@ public function send_email_otp($email, $otp, $account)
     ];
 
     // Send the OTP email
-    $this->getEmailRepository()->sendOtp($emailData);
+    // $emailOtpResult =  $this->getEmailRepository()->sendOtp($emailData);
 
-    return true;
+    // echo "<pre>";print_r($emailOtpResult);
+    // die;
+
+    return  $this->getEmailRepository()->sendOtp($emailData);
 }
 
 public function resendOtp(){
@@ -33314,16 +33328,45 @@ public function resendOtp(){
          {
             $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
             $current_time = time(); // Get current time
+            $mobileNo = $account->getCellPhone();
+            if($mobileNo){
+                $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
+                 if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
+                {
+                  $this->session->set_flashdata('success', 'Otp sent to your mobile number');
+                  echo json_encode(array(
+                      'auth' => true,
+                      'mobileAuth'=>true
+                  ));
+                }else{
+                  echo json_encode(array(
+                      'auth' => false,'mobileAuth'=>false
+                  ));die;
+                }
+            }else{
+                // Print the entire session data
+                $emailOtpResult = $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
+                if($emailOtpResult)
+                {
+                    echo json_encode(array(
+                        'auth' => true,
+                        'emailAuth'=>true
+                    ));
+                }else{
+                 echo json_encode(array(
+                     'auth' => false,
+                     'emailAuth'=>false
+                 ));die;
+
+                }
+            }
             $account->setEmailOtp($generated_otp);
             $account->setOtpTime($current_time); // Save the current timestamp
             $this->em->persist($account);
             $this->em->flush();
             $this->em->clear();
-            // Print the entire session data
-            $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
-            echo json_encode(array(
-                'success' => true,
-            ));
+            die;
+          
          }
          else{
             echo json_encode(array(
@@ -33351,18 +33394,7 @@ public function sendMobileOtp($to_number,$otp)
         // If it doesn't, prepend the country code (+91 for India)
         $to_number = '+91' . $to_number;
     }
-
     $result = $this->twiliolibrary->send_mobile_otp($to_number,$otp);
-    // Handle the result
-    // if ($result['success']) {
-    //     //echo 'OTP sent successfully: ' . $result['otp'];
-    //     return true;
-    // } else {
-    //     //echo 'Error: ' . $result['error'];
-    //     echo json_encode(array(
-    //         'error' => $result['error'],
-    //     ));
-    // }
     return $result;
 }
 
