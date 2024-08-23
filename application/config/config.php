@@ -376,6 +376,7 @@ $config['rewrite_short_tags'] = FALSE;
 |
 */
 $config['proxy_ips'] = '';
+$config['composer_autoload'] = FCPATH . 'vendor/autoload.php';
 
 $config['live'] = true;
 $config['psa_endpoint'] = 'https://my.prositeaudit.com/api/';

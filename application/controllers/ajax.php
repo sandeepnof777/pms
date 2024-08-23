@@ -36,7 +36,6 @@ class Ajax extends MY_Controller
     {
         parent::__construct();
         $this->accountData = null;
-
         $this->load->library('session');
         $this->load->library('JsonResponse');
         $this->load->config('quickbooks');
@@ -64,6 +63,7 @@ class Ajax extends MY_Controller
         } else {
              if($account->getAuthLogin())
              {
+                $mobileNo = $account->getCellPhone();
                 $this->session->set_userdata('useremail', $this->input->post('email'));
                 $this->session->set_flashdata('success', 'Otp sent to your email id');
                 $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
@@ -74,10 +74,29 @@ class Ajax extends MY_Controller
                 $this->em->flush();
                 $this->em->clear();
                 // Print the entire session data
-                $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
-                echo json_encode(array(
-                    'auth' => true,
-                ));
+             //   $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
+               // $this->send_mobile_otp();
+               if($mobileNo)
+               {
+                  $mobileOtpResult =  $this->sendMobileOtp($mobileNo,$generated_otp);
+                  if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
+                  {
+                    echo json_encode(array(
+                        'auth' => true,
+                        'mobileAuth'=>true
+                    ));
+                  }else{
+                    echo json_encode(array(
+                        'auth' => false,'mobileAuth'=>false
+                    ));
+                  }
+               }else{
+                    $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
+                    echo json_encode(array(
+                        'auth' => true,
+                        'emailAuth'=>true
+                    ));
+               }
 
                 die;
              } 
@@ -33324,8 +33343,28 @@ public function parse_template($template, $data) {
         $template = str_replace('{' . $key . '}', $value, $template);
     }
     return $template;
-}
+} 
 
+public function sendMobileOtp($to_number,$otp)
+{
+    if (substr($to_number, 0, 1) !== '+') {
+        // If it doesn't, prepend the country code (+91 for India)
+        $to_number = '+91' . $to_number;
+    }
+
+    $result = $this->twiliolibrary->send_mobile_otp($to_number,$otp);
+    // Handle the result
+    // if ($result['success']) {
+    //     //echo 'OTP sent successfully: ' . $result['otp'];
+    //     return true;
+    // } else {
+    //     //echo 'Error: ' . $result['error'];
+    //     echo json_encode(array(
+    //         'error' => $result['error'],
+    //     ));
+    // }
+    return $result;
+}
 
 
 
