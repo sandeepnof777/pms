@@ -29,7 +29,7 @@ class TwilioLibrary
     {
   
         // Message to be sent
-        $message = "Hello, this is a Login OTP: $otp";
+        $message = "Hello, Use verification code: $otp for pms valid for 10 minutes";
         // Initialize cURL session
         $ch = curl_init();
 

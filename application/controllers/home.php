@@ -840,10 +840,6 @@ class Home extends MY_Controller {
 
        $this->load->view('auth', $data);
  
-    }
-
-    public function auth_check(){
-       echo "working on this";die;
-    }
+    } 
 
 }

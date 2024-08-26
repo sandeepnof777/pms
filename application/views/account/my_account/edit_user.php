@@ -1,4 +1,71 @@
 <?php /* @var $user \models\Accounts */ ?>
+<style>
+     /* Custom styles for OTP Dialog */
+#otp-verification-dialog {
+    padding: 20px;
+}
+
+#otp-verification-dialog .ui-dialog-title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+#otp-verification-dialog .form-group {
+    margin-top: 15px;
+}
+
+#otp-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#otp-input {
+    /* width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; */
+    border: 1px solid #ddd;
+    border-radius: 2px 2px 2px 2px;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.1) inset;
+    -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.1) inset;
+    color: #777777;
+    padding: 5px;
+}
+
+#verify-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2em;
+    border-radius: 4px;
+    border: none;
+    background-color: #25AAE1!important; /* Blue background color */
+    color: #fff!important;/* White text color */
+    cursor: pointer;
+    margin-top:8px;
+ }
+
+ #otp-verification-dialog p
+ {
+    font-size:14px;
+    font-family: Arial, Helvetica, sans-serif!important;
+    color:#444444;
+    line-height: 1.8;
+ }
+
+ #otpResend {
+    position: relative;
+    z-index: 9999;
+}
+#otpResend a {
+    pointer-events: auto;
+}
+ 
+ 
+ 
+
+ 
+    </style>
 <h3>
     Editing User - <?php echo $user->getFirstName() . ' ' . $user->getLastName() ?>
     <a href="<?php echo site_url('account/company_users') ?>">Back</a>
@@ -6,6 +73,7 @@
         <span style="color: red;">(Limited User)</span>
     <?php } ?>
 </h3>
+
 
 <?php echo form_open($this->uri->segment(1) . '/' . $this->uri->segment(2) . '/' . $user->getAccountId(), array('class' => 'form-validated', 'autocomplete' => 'off')) ?>
 <table class="boxed-table" cellpadding="0" cellspacing="0" width="100%">
@@ -352,6 +420,7 @@
         <td></td>
     </tr>
 </table>
+
 <?php echo form_close() ?>
 
 
@@ -689,7 +758,131 @@
         }
     }
 
+        // to check mobile varification before enable 2way authentication
+      // Initialize the OTP Verification Dialog
+      $("#otp-verification-dialog").dialog({
+            autoOpen: false, // Keep the dialog hidden initially
+            modal: true,
+            buttons: {
+                Close: function() {
+                    $(this).dialog("close");
+                   // $("#2way_auth").val('0').change(); // Set value to "No"  
+                }
+            }
+        });
+        // Open the OTP Verification Dialog when #2way_auth changes to '1'
+        $('#2way_auth').change(function() {
+
+            if ($(this).val() == '1') {
+                $("#otp-verification-dialog").dialog('open');  // Open the OTP dialog
+            }
+        });
+    
+    // Initially hide OTP-related fields and messages
+    $("#otpResend").hide();
+    $("#otp-label, #otp-input, #msg_success, #msg_error").hide();
+
+    // Handle click events for both #verify-btn and #otpResend a
+    $('#verify-btn, #otpResend a').click(function(e) {
+        e.preventDefault(); // Prevent default behavior
+        const buttonText = $(this).text();
+
+        if (buttonText === "Verify") {
+            // Show OTP input and send OTP
+            $('#otp-label, #otp-input').show().prop('disabled', false);
+            sendOtp();
+            $(this).text('Confirm');
+        } else if (buttonText === "Confirm") {
+            // Handle OTP confirmation
+            handleOtpConfirmation();
+        } else if ($(this).is('#otpResend a')) {
+            // Resend OTP logic
+            sendOtp();
+        }
     });
+
+    function sendOtp() {
+        $.ajax({
+            url: "/ajax/resendOtp",
+            type: "POST",
+            data: {
+                email: "<?php echo $user->getEmail() ?>",
+                valid: 1
+            },
+            dataType: "json",
+            success: function(data) {
+                if (data.auth) {
+                    $("#msg_success").html("OTP sent successfully").show();
+                    $("#msg_error").hide();
+                } else if (data.fail==0) {
+                    $("#msg_error").show();
+                    $("#msg_error").html("Failed to send OTP").show();
+                    $("#msg_success").hide();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                $("#msg_error").html("An error occurred. Please try again.").show();
+                console.error("Request failed: " + textStatus + " - " + errorThrown);
+            }
+        });
+    }
+
+    function handleOtpConfirmation() {
+        const otp = $('#otp-input').val();
+        if (otp === '') {
+            $("#msg_error").html("Please enter the OTP").show();
+            return;
+        }
+
+        $.ajax({
+            url: "/ajax/otp_validate",
+            type: "POST",
+            data: {
+                email: "<?php echo $user->getEmail() ?>",
+                otp: otp
+            },
+            dataType: "json",
+            success: function(data) {
+                if (data.otp === false) {
+                    $("#otpResend").show();
+                } else {
+                    $("#otpResend").hide();
+                }
+
+                if (data.success) {
+                    $("#2way_auth").val('1').change();
+                    $("#msg_error").hide();
+                    $("#otp-verification-dialog").dialog('close');
+                    $("#otp-verification-dialog").hide();
+
+ 
+                    swal({
+                        title: 'OTP Verified',
+                        html: 'OTP verified successfully.',
+                        allowEscapeKey: false,
+                        allowOutsideClick: false,
+                        showCloseButton: true
+                    });
+                } else if (data.error) {
+                    $("#msg_error").html(data.error).show();
+                } else if (data.fail==false) {
+                    $("#msg_success").hide();
+                    console.log("sdfgsdfgsdfg");
+                    $("#msg_error").html(data.msg).show();
+                    $("#otpResend").show();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                $("#msg_error").html("An error occurred. Please try again.").show();
+                console.error("Request failed: " + textStatus + " - " + errorThrown);
+            }
+        });
+    }
+});
+
+
+
+
 
 
 </script>
@@ -775,4 +968,24 @@
     <br/>
 
 
+</div>
+ <!-- OTP Verification Dialog -->
+
+ <div id="otp-verification-dialog" title="2way Authentication" style="display:none;">
+    <?php if($user->getCellPhone() != "") { ?>
+        <p>A verification code has been sent to your mobile number: <b><?php echo $user->getCellPhone() ?></b></p>
+
+        <div class="form-group" id="otp-field">
+            <label for="otp-input" id="otp-label" style="display:none;">Enter OTP:</label>
+            <input type="text" id="otp-input" maxlength="6" class="form-control" placeholder="Enter OTP" style="display:none;" disabled>
+        </div>
+
+        <div id="msg_success" class="success" style="display:none; color:green;"></div>
+        <div id="msg_error" class="error" style="display:none; color:red;"></div>
+        <div id="otpResend"><a href="#">Resend OTP</a></div>
+
+        <button id="verify-btn">Verify</button>
+    <?php } else { ?>
+        <p>Mobile Number is required for two-way Authentication.</p>
+    <?php } ?>
 </div>

@@ -33242,6 +33242,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
                     );
                     $this->input->set_cookie($authCookie);
                 }
+                $account->setAuthLogin(1);
                 $account->setLastLogin(Carbon::now());
                 $account = $this->em->merge($account);
                 $this->em->persist($account);
@@ -33316,15 +33317,16 @@ public function send_email_otp($email, $otp, $account)
 
 public function resendOtp(){
     $email  = $this->input->post('email');
+    $valid = $this->input->post('valid');
     $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
         'email' => $this->input->post('email')
     ));
-   // print_r($account->getAccountId());die;
+    
     if (!$account) {
         echo json_encode(array(
             'error' => 'Email Not Exist!',
         ));
-    } else if($account->getAuthLogin())
+    } else if($this->session->userdata('logged') && $this->session->userdata('accountId'))
          {
             $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
             $current_time = time(); // Get current time
@@ -33340,7 +33342,7 @@ public function resendOtp(){
                   ));
                 }else{
                   echo json_encode(array(
-                      'auth' => false,'mobileAuth'=>false
+                      'auth' => false,'mobileAuth'=>false,"fail"=>0
                   ));die;
                 }
             }else{
@@ -33369,6 +33371,8 @@ public function resendOtp(){
           
          }
          else{
+            echo "<pre>";
+            print_r($account);
             echo json_encode(array(
                 'error' => 'User Not Authenticate!',
             ));
