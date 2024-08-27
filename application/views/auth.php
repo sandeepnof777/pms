@@ -177,7 +177,7 @@ setTimeout(function() {
     $("#msg_success").fadeOut(); // Hide the message after 5 seconds
     $("#msg_error").fadeOut();
     $("#logging_error").fadeOut();
-}, 9000); // 5000 milliseconds = 5 seconds
+}, 9000); // 1000 milliseconds = 1 seconds
 //otp resend close 
     });
 </script>

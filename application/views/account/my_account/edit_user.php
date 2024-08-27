@@ -830,6 +830,7 @@
     function handleOtpConfirmation() {
         const otp = $('#otp-input').val();
         if (otp === '') {
+            $("#msg_success").hide();
             $("#msg_error").html("Please enter the OTP").show();
             return;
         }
@@ -854,7 +855,7 @@
                     $("#msg_error").hide();
                     $("#otp-verification-dialog").dialog('close');
                     $("#otp-verification-dialog").hide();
-
+                    $("#otp-field").hide();
  
                     swal({
                         title: 'OTP Verified',
