@@ -77,14 +77,12 @@
 });
 
     $(document).ready(function () {
-  
         $("a#loginBtn").click(function(e) {
             console.log('here');
             e.preventDefault();
             $("#login-form").submit();
             return false;
         })
-
         $("#logging_error, #logging_in").hide();
         $("#login-form").submit(function () {
             $("#logging_in").show();
@@ -95,7 +93,6 @@
             }
             var url = '<?php echo site_url('account') ?>';
             var url2 = '<?php echo site_url('home/auth') ?>';
-
             var request = $.ajax({
                 url:"/ajax/checkLogin",
                 type:"POST",
@@ -108,8 +105,7 @@
                 success:function (data) {
                     if (data.auth) {
                         document.location.href = url2;                        
-                    } 
-                 
+                    }                 
                     if (data.success) {
                         document.location.href = url;
                     } else {

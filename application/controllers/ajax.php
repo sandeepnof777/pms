@@ -80,7 +80,8 @@ class Ajax extends MY_Controller
                   $mobileOtpResult =  $this->sendMobileOtp($mobileNo,$generated_otp);
                   if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
                   {
-                    $this->session->set_flashdata('success', 'Otp sent to your mobile number');
+                       $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+                       $this->session->set_flashdata('success', "Otp sent to your mobile number $maskedNumber");
 
                     echo json_encode(array(
                         'auth' => true,
@@ -33336,15 +33337,18 @@ public function resendOtp(){
                 $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
                  if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
                 {
+                    $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+
                   if(!$valid){
                     // it's hide when request is come to edit_user page to resend otp 
                     //becuse we did not reload the page but when user save the setting page would be reloading 
                     //so we add condtion
-                      $this->session->set_flashdata('success', 'Otp sent to your mobile number');
+                       $this->session->set_flashdata('success', "Otp sent to your mobile number $maskedNumber");
                   }
                   echo json_encode(array(
                       'auth' => true,
-                      'mobileAuth'=>true
+                      'mobileAuth'=>true,
+                      'msg'=> "Otp sent to your mobile number ".$maskedNumber
                   ));
                 }else{
                   echo json_encode(array(

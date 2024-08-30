@@ -812,7 +812,7 @@
             dataType: "json",
             success: function(data) {
                 if (data.auth) {
-                    $("#msg_success").html("OTP sent successfully").show();
+                    $("#msg_success").html(data.msg).show();
                     $("#msg_error").hide();
                 } else if (data.fail==0) {
                     $("#msg_error").show();

@@ -876,8 +876,9 @@ class Home extends MY_Controller {
                     $this->em->persist($account);
                     $this->em->flush();
                     $this->em->clear();
-                      $this->session->set_flashdata('success', 'Otp sent to your mobile number');                 
-                      redirect('home/authCheck');
+                    $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+                    $this->session->set_flashdata('success', "Otp sent to your mobile number $maskedNumber");
+                    redirect('home/authCheck');
                     }else{
                   
                 }
@@ -888,9 +889,15 @@ class Home extends MY_Controller {
 
 public function sendMobileOtp($to_number,$otp)
 {
-    if (substr($to_number, 0, 1) !== '+') {
-        // If it doesn't, prepend the country code (+91 for India)
+    $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
+    $mobileNo = ['9039181447','9826778111'];  
+     // Check if the number exists in the array
+     if (in_array($to_number, $mobileNo)) {
+        // Prepend the country code for India (+91)
         $to_number = '+91' . $to_number;
+    } else {
+        // Prepend the country code for USA (+1)
+        $to_number = '+1' . $to_number;
     }
     $result = $this->twiliolibrary->send_mobile_otp($to_number,$otp);
     return $result;

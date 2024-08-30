@@ -152,8 +152,7 @@ $("#otpResend").on("click", function (e) {
             if (data.auth) {
                 $("#logging_error").hide();
                 $("#logging_in").hide();
-                console.log("OTP sent successfully");
-                $("#msg_success").html("Otp sent successfully");
+                $("#msg_success").html(data.msg);
                 $("#msg_success").show();
 
             } else {

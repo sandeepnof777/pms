@@ -8633,23 +8633,7 @@ $events = $this->getEventRepository()->getCalendarEvents($start, $end,$this->acc
         } 
     }
 
-    public function update_lead_source88()
-    {
-    if ($this->input->post('action') === 'update') {
-        $sourceId = $this->input->post('sourceId');
-        $newName = $this->input->post('newName');
-         $notificationData = [
-            'name' => $newName
-        ];        
-        $this->db->where('id', $sourceId); // Assuming 'id' is the primary key
-        $result = $this->db->update('lead_sources', $notificationData);
-        if ($result) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['error' => 'Failed to update lead source.']);
-        }
-    }
-    }
+ 
 
     public function update_lead_source()
     {

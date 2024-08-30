@@ -126,7 +126,7 @@ $fieldTypeNames = array(
                                         <label>Field Type</label>
                                         <select name="fieldType" id="fieldType">
                                             <option value="text">Number</option>
-                                            <option value="texttext">Text</option>
+                                            <option value="text">Text</option>
                                             <option value="select">Dropdown</option>
                                             <option value="textarea">Text Area</option>
                                         </select>
