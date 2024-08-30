@@ -29,9 +29,10 @@ class Email extends RepositoryAbstract
     private $subject = '';
     private $content = '';
     private $toEmail = '';
+    private $replyTo='';
+
     private $additionalEmails;
-    private $replyTo;
-    private $categories;
+     private $categories;
     private $uniqueArg;
     private $uniqueArgVal;
     private $uniqueArg2;
@@ -216,14 +217,14 @@ class Email extends RepositoryAbstract
 
     public function send(array $emailData)
     {
-        
+         
         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
         try {
             $this->setParameters($emailData);
             if (!$this->hasParameters()) {
-                return false;
+                 return false;
             }
-            $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+             $mail->SMTPDebug = SMTP::DEBUG_SERVER;
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
@@ -233,7 +234,9 @@ class Email extends RepositoryAbstract
             $mail->Port = 587;
             $mail->setFrom('svimsoftrivet@gmail.com', $this->fromName);
             $mail->addAddress($this->toEmail, 'Admin');
-            $mail->addReplyTo($this->replyTo, 'Information');
+            if($this->replyTo!=""){
+                $mail->addReplyTo($this->replyTo, 'Information');
+            }
 
                 //     // Add categories if we have them
                 if (is_array($this->categories)) {
@@ -295,6 +298,8 @@ class Email extends RepositoryAbstract
             // }
 
                 // Content
+
+                
             $mail->isHTML(true);
             $mail->Subject = $this->subject;
             $mail->Body = $this->content;
@@ -302,12 +307,14 @@ class Email extends RepositoryAbstract
             // Send email
             if (!$mail->send()) {
                 // Log error and return false
+                print_r($mail->ErrorInfo);die;
                 error_log("Error sending email: {$mail->ErrorInfo}");
                 return false;
             }
             return true; // Email sent successfully
         } catch (Exception $e) {
             // Log error and return false
+            print_r($e->getMessage());die;
             error_log("Error sending email: {$e->getMessage()}");
             return false;
         }

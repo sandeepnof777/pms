@@ -138,15 +138,22 @@ class Home extends MY_Controller {
         if ($this->input->post('email')) {
             $account = $this->em->getRepository('models\Accounts')->findOneByEmail($this->input->post('email'));
             /* @var $account \models\Accounts */
-
             if ($account) {
+                $this->session->set_userdata('recoveremail', $account->getEmail());
 
-                $account->sendPasswordReset();
-
-                $this->log_manager->add(\models\ActivityAction::RECOVER_PASSWORD, 'User recovered password. A new password has been sent to ' . $account->getEmail());
-                $this->session->set_flashdata('success', 'We have emailed you instructions for resetting your password. Please check your email.');
-                redirect('home/signin');
-            } else {
+                  if($account->getAuthLogin())
+                  {
+                     $this->sendOtp($account);
+                  }
+                   else{
+                    $account->sendPasswordReset();
+                    $this->log_manager->add(\models\ActivityAction::RECOVER_PASSWORD, 'User recovered password. A new password has been sent to ' . $account->getEmail());
+                    $this->session->set_flashdata('success', 'We have emailed you instructions for resetting your password. Please check your email.');
+                    redirect('home/signin');
+                  }
+            }
+            
+            else {
                 $this->session->set_flashdata('error', 'Email not found in the database!');
                 redirect('home/recover_password');
             }
@@ -839,7 +846,55 @@ class Home extends MY_Controller {
         $data['remember_email'] = $this->input->cookie('remember_email') ?: $email;
 
        $this->load->view('auth', $data);
- 
-    } 
+     }
+     
+     public function authCheck(){
+        $data = [];
+        if(!empty($this->session->all_userdata())){
+           $email =  $this->session->userdata('recoveremail');
+           $account = $this->em->getRepository('models\Accounts')->findOneBy(
+               array('email' => $email)
+           );
+        }    
+        if ($account) {
+           $data['rcovery_code']  =  $account->getRecoveryCode();
+        }
+        $data['remember_email'] = $this->input->cookie('remember_email') ?: $email;
+  
+       $this->load->view('forget-pass-auth', $data);
+     } 
+
+    public function sendOtp($account){
+            $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
+            $current_time = time(); // Get current time
+            $mobileNo = $account->getCellPhone();
+            $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
+                 if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
+                {
+                    $account->setEmailOtp($generated_otp);
+                    $account->setOtpTime($current_time); // Save the current timestamp
+                    $this->em->persist($account);
+                    $this->em->flush();
+                    $this->em->clear();
+                      $this->session->set_flashdata('success', 'Otp sent to your mobile number');                 
+                      redirect('home/authCheck');
+                    }else{
+                  
+                }
+           
+            die;  
+}
+
+
+public function sendMobileOtp($to_number,$otp)
+{
+    if (substr($to_number, 0, 1) !== '+') {
+        // If it doesn't, prepend the country code (+91 for India)
+        $to_number = '+91' . $to_number;
+    }
+    $result = $this->twiliolibrary->send_mobile_otp($to_number,$otp);
+    return $result;
+}
+
 
 }

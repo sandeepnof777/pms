@@ -411,6 +411,8 @@
 
                     var place = autocomplete.getPlace();
                     var parsedPlace = placeParser(place);
+                    console.log("place",place);
+                    console.log("parsedPlace",parsedPlace);
 
                     $("#companyAddress").val(place.name);
                     $("#companyCity").val(parsedPlace.locality);

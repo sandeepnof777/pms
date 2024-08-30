@@ -5601,27 +5601,72 @@ class Accounts extends \MY_Model
         $this->email = $email;
     }
 
+    // public function confirmPasswordChanged2()
+    // {
+
+    //     $emailTemplate = $this->doctrine->em->findAdminTemplate(3);
+    //     $etp = new \EmailTemplateParser();
+    //     $etp->setAccount($this);
+
+    //     $subject = $etp->parse($emailTemplate->getTemplateSubject());
+    //     $content = $etp->parse($emailTemplate->getTemplateBody(), true);
+
+    //     $emailData = [
+    //         'to' => $this->getEmail(),
+    //         'fromName' => SITE_NAME,
+    //         'fromEmail' => 'no-reply@' . SITE_EMAIL_DOMAIN,
+    //         'subject' => $subject,
+    //         'body' => $content,
+    //         'categories' => ['Forgot Password Confirm'],
+    //     ];
+
+    //     $this->getEmailRepository()->send($emailData);
+    // }
+
     public function confirmPasswordChanged()
-    {
+{
+    // Fetch the email template from the database
+    $emailTemplate = $this->doctrine->em->findAdminTemplate(3);
+    
+    // Create the email template parser
+    $etp = new \EmailTemplateParser();
+    $etp->setAccount($this);
 
-        $emailTemplate = $this->doctrine->em->findAdminTemplate(3);
-        $etp = new \EmailTemplateParser();
-        $etp->setAccount($this);
+    // Generate a random password reset token
+     
+    // Save the token in the user's record in the database
+    $resetToken =  $this->getRecoveryCode();
+    $this->doctrine->em->persist($this);
+    $this->doctrine->em->flush();
+    
+      // Construct the full password reset link
+    $passwordResetLink = "https://local.pms.pavementlayers.com/home/password_reset/" . $resetToken;
 
-        $subject = $etp->parse($emailTemplate->getTemplateSubject());
-        $content = $etp->parse($emailTemplate->getTemplateBody(), true);
+    // Create an array of placeholders and their values
+    $placeholders = [
+        '{user.passwordResetLink}' => $passwordResetLink,
+        '{site_title}' => SITE_NAME,
+    ];
 
-        $emailData = [
-            'to' => $this->getEmail(),
-            'fromName' => SITE_NAME,
-            'fromEmail' => 'no-reply@' . SITE_EMAIL_DOMAIN,
-            'subject' => $subject,
-            'body' => $content,
-            'categories' => ['Forgot Password Confirm'],
-        ];
+    // Parse the subject and body with the placeholders replaced
+    $subject = "Password Changed at Pavement Layers";
+    $content = $etp->parse($emailTemplate->getTemplateBody(), $placeholders);
 
-        $this->getEmailRepository()->send($emailData);
-    }
+    // Prepare the email data
+    $emailData = [
+        'to' => $this->getEmail(),
+        'fromName' => SITE_NAME,
+        'fromEmail' => 'no-reply@' . SITE_EMAIL_DOMAIN,
+        'subject' => $subject,
+        'body' => $content,
+        'categories' => ['Forgot Password Confirm'],
+    ];
+
+    // Send the email
+    $this->getEmailRepository()->send($emailData);
+}
+
+
 
     public function sendNewCompanyEmail()
     {

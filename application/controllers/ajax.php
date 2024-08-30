@@ -50,7 +50,7 @@ class Ajax extends MY_Controller
 
     public function checkLogin()
     { 
-
+        
          $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
             'email' => $this->input->post('email'),
             'password' => md5($this->input->post('password')),
@@ -111,7 +111,6 @@ class Ajax extends MY_Controller
 
                 die;
              } 
-
             $this->session->sess_create($account->getAccountId());
             $this->session->set_userdata(array(
                 'logged' => 1,
@@ -33313,6 +33312,7 @@ public function send_email_otp($email, $otp, $account)
     // die;
 
     return  $this->getEmailRepository()->sendOtp($emailData);
+
 }
 
 public function resendOtp(){
@@ -33321,12 +33321,13 @@ public function resendOtp(){
     $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
         'email' => $this->input->post('email')
     ));
-    
+
+     
     if (!$account) {
         echo json_encode(array(
             'error' => 'Email Not Exist!',
         ));
-    } else if($this->session->userdata('logged') && $this->session->userdata('accountId'))
+    } else if($account->getEmail() && $account->getEmail()==trim($email))
          {
             $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
             $current_time = time(); // Get current time
@@ -33335,7 +33336,12 @@ public function resendOtp(){
                 $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
                  if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
                 {
-                  $this->session->set_flashdata('success', 'Otp sent to your mobile number');
+                  if(!$valid){
+                    // it's hide when request is come to edit_user page to resend otp 
+                    //becuse we did not reload the page but when user save the setting page would be reloading 
+                    //so we add condtion
+                      $this->session->set_flashdata('success', 'Otp sent to your mobile number');
+                  }
                   echo json_encode(array(
                       'auth' => true,
                       'mobileAuth'=>true
@@ -33371,8 +33377,9 @@ public function resendOtp(){
           
          }
          else{
-            echo "<pre>";
-            print_r($account);
+                // echo '<pre>';
+                // print_r($this->session->all_userdata());
+                // echo '</pre>';
             echo json_encode(array(
                 'error' => 'User Not Authenticate!',
             ));
@@ -33394,14 +33401,88 @@ public function parse_template($template, $data) {
 
 public function sendMobileOtp($to_number,$otp)
 {
-    if (substr($to_number, 0, 1) !== '+') {
-        // If it doesn't, prepend the country code (+91 for India)
+    $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
+   
+    $mobileNo = ['9039181447','9826778111'];
+    // if (substr($to_number, 0, 1) !== '+') {
+    //     // If it doesn't, prepend the country code (+91 for India)
+    //     $to_number = '+91' . $to_number;
+    // }
+     // Check if the number exists in the array
+     if (in_array($to_number, $mobileNo)) {
+        // Prepend the country code for India (+91)
         $to_number = '+91' . $to_number;
+    } else {
+        // Prepend the country code for USA (+1)
+        $to_number = '+1' . $to_number;
     }
     $result = $this->twiliolibrary->send_mobile_otp($to_number,$otp);
     return $result;
 }
 
+
+public function forget_pass_validate() {
+    $account = $this->em->getRepository('models\Accounts')->findOneBy(
+        array('email' => $this->input->post('email'))
+    );
+
+    if ($account) {
+        // Convert DateTime to Unix timestamp
+        $stored_time = $account->getOtpTime() ? $account->getOtpTime() : 0;
+        $current_time = time(); 
+        $time_diff = $current_time - $stored_time;
+        if($this->input->post('otp')==""){
+            echo json_encode(array(
+                'fail' => false,
+                'msg'=>"OTP field is required"
+            ));
+            die; 
+        }
+        if(!$account->getEmailOtp())
+        {
+            echo json_encode(array(
+                'fail' => false,
+                'otp' =>  false,
+                'msg'=>"OTP expired"
+            ));
+            die;
+        }else if($account->getEmailOtp() == $this->input->post('otp')) {
+            if ($time_diff <= 120) {
+                echo json_encode(array(
+                    'success' => true,
+                    'otp'=>"valid"
+                ));
+                // You can continue with login or any further processing here
+            } else {
+                // OTP expired, handle accordingly
+                echo json_encode(array(
+                    'fail' => false,
+                    'msg'=>"OTP expired",
+                    'otp' =>  false
+                ));
+                $account->setEmailOtp(null); // Clear OTP after expiration
+                $this->em->persist($account);
+                $this->em->flush();
+            }
+        } else {
+             echo json_encode(array(
+                'fail' => false,
+                'msg'=>"OTP Not Matched"
+            ));
+        }
+    } else {
+         echo json_encode(array(
+            'fail' => false,
+            'msg'=>"Account not found with email id"
+        ));
+    }
+}
+ 
+
+public function testlog()
+{
+
+}
 
 
 

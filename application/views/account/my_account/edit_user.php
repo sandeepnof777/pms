@@ -336,8 +336,8 @@
             <p class="clearfix">
                 <label>2way Authentication</label>
                 <select name="2way_auth" id="2way_auth">
-                    <option value="0">No</option>
-                    <option value="1" <?php if ($user->getAuthLogin()) echo 'selected="selected"'; ?>>Yes</option>
+                    <option value="0">Disabled</option>
+                    <option value="1" <?php if ($user->getAuthLogin()) echo 'selected="selected"'; ?>>Enabled</option>
                 </select>
             </p>
         </td>
