@@ -22,7 +22,7 @@
                         <tr class="even">
                             <td>
                                 <label>&nbsp;</label>
-                                <input type="submit" value="Send Password Reset Email" class="submit btn update-button" name="recover">
+                                <input style="margin-left:40px;" type="submit" value="Submit" class="submit btn update-button" name="recover">
                             </td>
                         </tr>
                         <tr>

@@ -1500,9 +1500,9 @@
             }
 
 
-            .show_only_mobile {
+            /* .show_only_mobile {
                 display: inline !important;
-            }
+            } */
 
             .table-striped td:nth-child(3) {
                 /* display: none; */
@@ -3958,7 +3958,7 @@ $print_pdf_url = site_url('proposals/live/preview/' . $print_layout . '/plpropos
                                                 <td></td>
                                                 <?php if ($isMapDataAdded) { ?>
                                                     <td></td> <?php } ?>
-                                                <td align="right"><strong>Total: <span
+                                                <td style="text-align: right"><strong>Total: <span
                                                                 class="show_only_mobile">$<?php echo number_format($total + $taxTotal, 2) ?></span></strong>
                                                 </td>
                                                 <td style="text-align: right">

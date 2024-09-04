@@ -5768,11 +5768,11 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
                     $fieldValue = $savedValue->getFieldValue();
                 }
                 switch ($field->getFieldType()) {
-                    case 'text':
-                        $fieldCodes .= '<input class="field field-numberFormat" name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" value="' . $fieldValue . '">';
+                    case 'number':
+                        $fieldCodes .= '<input class="field field-numberFormat" type="number" name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" value="' . $fieldValue . '">';
                         break;
-                    case 'texttext':
-                        $fieldCodes .= '<input class="field" type="text" name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" value="' . $field->getFieldValue() . '">';
+                    case 'text':
+                        $fieldCodes .= '<input class="field" type="text" name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" value="' . $fieldValue . '">';
                         break;
                     case 'select':
                         $fieldCodes .= '<select name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" class="field">';
@@ -5817,6 +5817,8 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
 
             if (($service->getInitialService() == SNOW_CATEGORY) || $initialService->getParent() == SNOW_CATEGORY) {
                 $pricingTypeCode = '';
+                $optionChecked = $service->isOptional() ? 'checked="checked"' : '';
+
                 foreach ($this->servicePricingTypes as $label => $type) {
                     $selected = '';
                     if ($service->getPricingType() == $type) {
@@ -5824,6 +5826,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
                     }
                     $pricingTypeCode .= '<option' . $selected . ' value="' . $type . '">' . $label . '</option>';
                 }
+                $fields[] = '<p class="clearfix"><label>Optional Service</label><input type="checkbox"' . $optionChecked . ' name="editOptional" id="editOptional" style="width: 14px; padding: 0; margin: 3px 0;"></p>';
                 $fields[] = '<p class="clearfix"><label>Pricing Type</label><select name="pricingType" id="pricingType">' . $pricingTypeCode . '</select></p> ';
                 $fields[] = '<p class="clearfix" id="materials-container"><label>Choose Material</label>' . form_dropdown('material',
                         $this->materials, $service->getMaterial(), ' id="material"') . '</p>';
@@ -5833,6 +5836,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
                 <label id="total">Total Amount</label>
                 <input type="text" class="priceFormat" disabled value="$0" id="totalCalculated" />
                 </p> ';
+
             } else {
                 if ($initialService->getTax()) {
                     $excludeChecked = $service->getExcludeFromTotal() ? 'checked="checked"' : '';

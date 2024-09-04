@@ -8633,7 +8633,6 @@ $events = $this->getEventRepository()->getCalendarEvents($start, $end,$this->acc
         } 
     }
 
- 
 
     public function update_lead_source()
     {

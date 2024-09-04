@@ -283,6 +283,7 @@
             </div>
         </td>
     </tr>
+    
     <?php if ($logged_account->isGlobalAdministrator()) { ?>
     <tr>
         <td>
@@ -332,15 +333,7 @@
             echo form_dropdown('email_frequency', array(1 => 'Daily', 2 => 'Weekly', 3 => 'Monthly'), $user->getEmailFrequency(), ' id="email_frequency"');
             ?>
         </td>
-        <td>
-            <p class="clearfix">
-                <label>2way Authentication</label>
-                <select name="2way_auth" id="2way_auth">
-                    <option value="0">Disabled</option>
-                    <option value="1" <?php if ($user->getAuthLogin()) echo 'selected="selected"'; ?>>Enabled</option>
-                </select>
-            </p>
-        </td>
+     
     </tr>
     <?php } ?>
     <tr >
@@ -349,7 +342,13 @@
             <input type="checkbox" name="proposal_email_cc" class="proposal_email_cc" <?php echo ($user->getProposalEmailCC())? 'checked':'';?> >
         </td>
         <td>
-        
+            <p class="clearfix">
+                <label>2way Authentication</label>
+                <select name="2way_auth" id="2way_auth">
+                    <option value="0">Disabled</option>
+                    <option value="1" <?php if ($user->getAuthLogin()) echo 'selected="selected"'; ?>>Enabled</option>
+                </select>
+            </p>
         </td>
     </tr>
     <?php if (!$user->isAdministrator(true)) : ?>
@@ -394,6 +393,7 @@
             </td>
         </tr>
     <?php endif; ?>
+ 
     <?php if ($logged_account->isGlobalAdministrator()) { ?>
         <tr>
             <td colspan="2" style="background: #f4f4f4;">
@@ -859,7 +859,7 @@
  
                     swal({
                         title: 'OTP Verified',
-                        html: 'OTP verified successfully.',
+                        html: 'Setting is enabled successfully.',
                         allowEscapeKey: false,
                         allowOutsideClick: false,
                         showCloseButton: true

@@ -2,8 +2,8 @@
 /* @var $service \models\Services */
 $fieldTypeNames = array(
     'select' => 'Dropdown',
-    'text' => 'Number',
-    'texttext' => 'Text',
+    'number' => 'Number',
+    'text' => 'Text',
     'textarea' => 'Text Area'
 );
 ?>
@@ -59,6 +59,8 @@ $fieldTypeNames = array(
                 </div>
                 <div class="box-content">
                     <?php
+                   //  echo "<pre>";print_r($fieldTypeNames);
+                  //  echo "<pre>";print_r($fields);die;
                     if (!count($fields)) {
                         ?>
                         <p class="padded">No fields have been defined for this service.</p>
@@ -125,7 +127,7 @@ $fieldTypeNames = array(
                                     <p class="clearfix left">
                                         <label>Field Type</label>
                                         <select name="fieldType" id="fieldType">
-                                            <option value="text">Number</option>
+                                            <option value="number">Number</option>
                                             <option value="text">Text</option>
                                             <option value="select">Dropdown</option>
                                             <option value="textarea">Text Area</option>
