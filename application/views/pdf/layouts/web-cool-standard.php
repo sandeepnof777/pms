@@ -4191,7 +4191,105 @@ $print_pdf_url = site_url('proposals/live/preview/' . $print_layout . '/plpropos
                                     <?php } ?>
                                 </div>
                                 <?php
-                            }
+                                // Optional Services for Snow Case 
+                                 if (count($optionalServices)) {
+                                    ?>
+                                    <h2 class="mg-t-4">Optional Services:</h2>
+                                    <div class="table-container ">
+                                        <table width="100%" class="table mytable table-striped table-sm" border="0">
+                                            <thead>
+                                            <tr>
+                                                <td width="10%"><strong>Item</strong></td>
+                                                <td width="45%"><strong>Description</strong></td>
+                                                <?php if ($isMapDataAddedOS) { ?>
+                                                    <td width="25%"><strong>Map Area</strong></td> <?php } ?>
+                                                <td width="20%" style="text-align: right"><strong>Cost</strong></td>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <?php
+                                            $k = 0;
+                                            $total = 0;
+                                            $taxSubTotal = 0;
+                                            $isTaxApplied = false;
+                                            $taxPrice = 0;
+                                            foreach ($optionalServices as $service) {
+                                                $k++;
+                                                 if ($service->getTaxPrice()) {
+                                                    $taxprice = (float)str_replace($s, $r, $service->getTaxPrice());
+                                                }else
+                                                {
+                                                    $taxprice=0;
+                                                }
+                                                ?>
+                                                <tr>
+                                                    <td <?php if ($k % 2) {
+                                                        echo 'class="odd"';
+                                                    } ?>><?php echo $k; ?>.
+                                                    </td>
+
+                                                    <td <?php if ($k % 2) {
+                                                        echo 'class="odd"';
+                                                    } ?> ><a href="javascript:void(0)" class="serviceNameList"
+                                                             data-service-optional="1" data-bs-toggle="offcanvas"
+                                                             data-bs-target="#serviceOffcanvasRight"
+                                                             aria-controls="offcanvasRight"
+                                                             data-service-id="service_<?php echo $service->getServiceId() ?>"
+                                                             data-service-ind-id="<?php echo $service->getServiceId() ?>"
+                                                             data-map-area="<?php if ($isMapDataAdded) {
+                                                                 echo $service->getMapAreaData();
+                                                             } ?>"> <?php
+                                                            if (isset($taxprice) & $taxprice > 0) {
+                                                                echo '<span style="font-weight:bold;vertical-align: sub;">* </span>';
+                                                                $isTaxApplied = true;
+                                                            }
+                                                            //fix for the price breakdown to show service name instead of Additional Service
+                                                            echo $service->getServiceName();
+                                                            ?></a></td>
+                                                    <?php if ($isMapDataAddedOS) { ?>
+                                                    <td <?php if ($k % 2) {
+                                                        echo 'class="odd"';
+                                                    } ?>> <?php echo $service->getMapAreaData(); ?></td><?php } ?>
+                                                    <td <?php echo ($k % 2) ? ' class="odd"' : ''; ?>
+                                                            style="text-align: right">
+                                                        <?php
+                                                        // Price required for calculations
+                                                        $price = (float)str_replace($s, $r, $service->getPrice());
+
+                                                        //echo $service->getFormattedPrice();
+                                                        echo '$' . number_format(($price - $taxprice), 2);
+                                                        ?>
+                                                    </td>
+                                                </tr>
+                                                <?php
+                                                $total += $price;
+                                               // $taxSubTotal += $taxprice;
+                                                $taxSubTotal += isset($taxprice) ? $taxprice : 0;
+
+                                            }
+                                            ?>
+                                            </tbody>
+                                            <?php if (!isset($hideTotalPrice) || !$hideTotalPrice) { ?>
+                                                <tfoot>
+                                                <?php if ($taxSubTotal > 0) { ?>
+                                                    <tr>
+                                                        <td></td>
+                                                        <?php if ($isMapDataAddedOS) { ?>
+                                                            <td></td> <?php } ?>
+                                                        <td align="right"><strong>Tax:</strong></td>
+                                                        <td style="text-align: right">
+                                                            $<?php echo number_format($taxSubTotal, 2) ?></td>
+                                                    </tr>
+                                                <?php } ?>
+
+                                                </tfoot>
+                                            <?php } ?>
+                                        </table>
+                                    </div>
+                                    <?php
+                                }
+                                 // Optional Services for Snow Case 
+                             }
 
                             ?>
                         </div>

@@ -5815,6 +5815,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
 
             $initialService = $this->em->find('models\Services', $service->getInitialService());
 
+ 
             if (($service->getInitialService() == SNOW_CATEGORY) || $initialService->getParent() == SNOW_CATEGORY) {
                 $pricingTypeCode = '';
                 $optionChecked = $service->isOptional() ? 'checked="checked"' : '';
@@ -6514,10 +6515,10 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
                 //create field Code
                 $fieldCode = '<p class="clearfix' . $class . '"><label>' . $field->getFieldName() . '</label>';
                 switch ($field->getFieldType()) {
-                    case 'text':
+                    case 'number':
                         $fieldCode .= '<input class="field field-numberFormat" type="text" name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" value="' . $field->getFieldValue() . '">';
                         break;
-                    case 'texttext':
+                    case 'text':
                         $fieldCode .= '<input class="field" type="text" name="' . $field->getFieldCode() . '" id="' . $field->getFieldCode() . '" value="' . $field->getFieldValue() . '">';
                         break;
                     case 'select':
@@ -6551,6 +6552,8 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
             foreach ($this->servicePricingTypes as $label => $type) {
                 $pricingTypeCode .= '<option value="' . $type . '">' . $label . '</option>';
             }
+            $fields[] = '<p class="clearfix"><label>Optional Service</label><input type="checkbox" name="optional" id="optional" style="width: 14px; padding: 0; margin: 3px 0;"></p>';
+
             $fields[] = '<p class="clearfix"><label>Pricing Type</label><select name="pricingType" id="pricingType">' . $pricingTypeCode . '</select></p>';
             $fields[] = '<p class="clearfix" id="materials-container"><label>Choose Material</label>' . form_dropdown('material',
                     $this->materials, array(), ' id="material"') . '</p>';
