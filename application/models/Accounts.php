@@ -222,14 +222,14 @@ class Accounts extends \MY_Model
     private $parent_company_id =0;
 
      /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer",nullable=false)
      */
     private $work_order_setting=0;
     
      /**
      * @ORM\Column(type="integer")
      */
-    private $auth_login;
+    private $failed_otp_count;
      /**
      * @ORM\Column(type="integer")
      */
@@ -238,6 +238,17 @@ class Accounts extends \MY_Model
      * @ORM\Column(type="integer")
      */
     private $otp_time;
+
+    private $auth_login;
+    /**
+    * @ORM\Column(type="integer")
+    */
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $last_failed_try;
+    
 
     
 
@@ -5568,9 +5579,8 @@ class Accounts extends \MY_Model
      */
     public function sendPasswordReset()
     {
-        $this->setRecoveryCode();
-        $this->doctrine->em->persist($this);
-        $this->doctrine->em->flush();
+       // $this->doctrine->em->persist($this);
+       // $this->doctrine->em->flush();
 
         $emailTemplate = $this->doctrine->em->findAdminTemplate(8);
         $etp = new \EmailTemplateParser();
@@ -5587,7 +5597,7 @@ class Accounts extends \MY_Model
             'body' => $content,
             'categories' => ['Forgot Password Reset'],
         ];
-
+ 
         $this->getEmailRepository()->send($emailData);
     }
 
@@ -11617,7 +11627,8 @@ function getExpireAdminCompaniesTableData()
      * @var $work_order_setting
      */
     public function setWorkOrderSetting($work_order_setting)
-    {
+    { 
+        
         $this->work_order_setting = $work_order_setting;
     }
 
@@ -11625,17 +11636,17 @@ function getExpireAdminCompaniesTableData()
      * Getter for  auth login
      * @return mixed
      */
-    public function getAuthLogin()
+    public function getFailedOtpCount()
     {
-        return $this->auth_login;
+        return $this->failed_otp_count;
     } 
    /**
      * Setter for auth login
-     * @var $auth_login
+     * @var $failed_otp_count
      */
-    public function setAuthLogin($auth_login)
+    public function setFailedOtpCount($failed_otp_count)
     {
-        $this->auth_login = $auth_login;
+        $this->failed_otp_count = $failed_otp_count;
     }
 
     /**
@@ -11672,6 +11683,34 @@ function getExpireAdminCompaniesTableData()
         $this->otp_time = $otp_time;
     }
 
+    /**
+     * Getter for  last failed try
+     * @return mixed
+     */
+    public function getLastFailedTry()
+    {
+        return $this->last_failed_try;
+    } 
+   /**
+     * Setter for last failed try
+     * @var $last_failed_try
+     */
+    public function setLastFailedTry($last_failed_try)
+    {
+        $this->last_failed_try = $last_failed_try;
+    }
 
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function setDefaultValues()
+    {
+        if ($this->work_order_setting === null) {
+            $this->work_order_setting = 0; // Or any default value
+        }
+    }
+
+    
 
 }

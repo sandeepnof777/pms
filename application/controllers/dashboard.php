@@ -10,7 +10,6 @@ class Dashboard extends MY_Controller
     {
         $this->login_restricted = true;
         parent::__construct();
- 
     }
 
     function index()

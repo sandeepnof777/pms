@@ -364,8 +364,89 @@
                 </table>
             <?php } ?>
         </div>
+        <?php
+        if (count($optionalServices)) {
+?>
+            <h2>Optional Services:</h2>
+            <div class="table-container">
+                <table width="100%" class="table" border="0">
+                    <thead>
+                    <tr>
+                        <td width="10%"><strong>Item</strong></td>
+                        <td width="45%"><strong>Description</strong></td>
+                        <?php if($isMapDataAddedOS){?><td width="25%"><strong>Map Area</strong></td> <?php }?>
+                        <td width="20%" style="text-align: right"><strong>Cost</strong></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    $k = 0;
+                    $total = 0;
+                    $taxSubTotal = 0;
+                    $isTaxApplied =false;
+                    foreach ($optionalServices as $service) {
+                        $k++;
+                        $taxprice = 0;
+                        if ($service->getTaxPrice()) {
+                            $taxprice = (float) str_replace($s, $r, $service->getTaxPrice());
+                        }
+                        ?>
+                        <tr>
+                            <td <?php if ($k % 2) {
+                                echo 'class="odd"';
+                            } ?>><?php echo $k; ?>.</td>
+                            <td <?php if ($k % 2) {
+                                echo 'class="odd"';
+                            } ?>>
+                        <?php
+                            if(floatval($taxprice > 0)){
+                                echo '<span style="font-weight:bold;vertical-align: sub;">* </span>';
+                                $isTaxApplied = true;
+                            }
+                            //fix for the price breakdown to show service name instead of Additional Service
+                            echo $service->getServiceName();
+                        ?></td>
+                        <?php if($isMapDataAddedOS){?><td <?php if ($k % 2) {echo 'class="odd"';} ?>> <?php echo $service->getMapAreaData();?></td><?php } ?>
+                            <td <?php echo ($k % 2) ? ' class="odd"' : ''; ?> style="text-align: right">
+                            <?php
+                            // Price required for calculations
+                            $price = (float) str_replace($s, $r, $service->getPrice());
+
+                            //echo $service->getFormattedPrice();
+                            echo '$'.number_format(($price - $taxprice), 2);
+                        ?>
+                        </td>
+                    </tr>
+                    <?php
+                    $total += $price;
+                    $taxSubTotal += $taxprice;
+
+                    }
+                    ?>
+                    </tbody>
+                    <?php if (!isset($hideTotalPrice) || !$hideTotalPrice) { ?>
+                    <tfoot>
+                    <?php if ($taxSubTotal>0) { ?>
+                    <tr>
+                        <td></td>
+                        <?php if($isMapDataAddedOS){?><td></td> <?php }?>
+                        <td align="right"><strong>Tax:</strong></td>
+                        <td style="text-align: right">$<?php echo number_format($taxSubTotal, 2) ?></td>
+                    </tr>
+                    <?php } ?>
+                    <!--
+                    <tr>
+                        <td></td>
+                        <td align="right"><strong>Total:</strong></td>
+                        <td style="text-align: right"><strong>$<?php echo number_format($total + $taxSubTotal, 2) ?></strong></td>
+                    </tr>
+                    -->
+                    </tfoot>
+                    <?php } ?>
+                </table>
+            </div>
 <?php
-    }
+    }}
     /*
     if($isTaxApplied){?> 
     <p><span style="font-weight:bold;vertical-align: sub;">*</span> Price excludes Tax</p>

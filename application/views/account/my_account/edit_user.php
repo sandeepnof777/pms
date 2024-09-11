@@ -56,13 +56,48 @@
  #otpResend {
     position: relative;
     z-index: 9999;
+    background-color: #25AAE1;
+    color:white!important;
+
 }
 #otpResend a {
     pointer-events: auto;
 }
  
+.radio-option {
+        display: flex;
+        align-items: center;
+         margin-left:15px;
+
+    }
+
+    .radio-option label {
+        margin-left: 10px; /* Space between the radio button and label */
+        min-width: 190px; /* Ensures labels align consistently */
+    }
+
+    .boxed-table label {
+     text-align: left!important; 
+ }
+
+ div.error, div.success{
  
- 
+    width: 300px!important;
+    margin-left:5px!important;
+}
+ .Otp_box label{
+    width: unset !important;
+ }
+
+ .Otp_box input.text{
+    width: unset !important;
+ }
+ .send_varification_code  #otpResend:hover,
+#otpResend:focus {
+  background-color: #25AAE1 !important;
+  background: #25AAE1!important;
+  color:white!important;
+}
 
  
     </style>
@@ -341,15 +376,7 @@
             <label>Proposal Email CC</label>
             <input type="checkbox" name="proposal_email_cc" class="proposal_email_cc" <?php echo ($user->getProposalEmailCC())? 'checked':'';?> >
         </td>
-        <td>
-            <p class="clearfix">
-                <label>2way Authentication</label>
-                <select name="2way_auth" id="2way_auth">
-                    <option value="0">Disabled</option>
-                    <option value="1" <?php if ($user->getAuthLogin()) echo 'selected="selected"'; ?>>Enabled</option>
-                </select>
-            </p>
-        </td>
+     
     </tr>
     <?php if (!$user->isAdministrator(true)) : ?>
         <tr class="odd">
@@ -535,6 +562,8 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
+        $("#otpResend").css("display", "block");
+
         $(".bidApprovalDetails").hide();
         //approval code
         if ($('#sales').val()==0) {
@@ -683,28 +712,7 @@
 
         // Password Reset request
         $("#sendPasswordReset").click(function () {
-
-            var accountId = $(this).data('account-id');
-
-            $.ajax({
-                type: "post",
-                url: "<?php echo site_url('ajax/sendPasswordReset') ?>",
-                async: false,
-                dataType: 'json',
-                data: {
-                    accountId: accountId
-                },
-                success: function (data) {
-                    if (data.success) {
-                        $("#passwordResetText").text('Password Rest email sent!');
-                    }
-                    else {
-                        $("#passwordResetText").text('An error occurred');
-                    }
-
-                    $("#sendPasswordEmailHelp").dialog('open');
-                }
-            });
+            $("#sendPasswordEmailHelp").dialog('open'); 
         });
 
         $("#sendPasswordEmailHelp").dialog({
@@ -771,114 +779,128 @@
             }
         });
         // Open the OTP Verification Dialog when #2way_auth changes to '1'
-        $('#2way_auth').change(function() {
-
-            if ($(this).val() == '1') {
-                $("#otp-verification-dialog").dialog('open');  // Open the OTP dialog
-            }
-        });
+   
     
     // Initially hide OTP-related fields and messages
     $("#otpResend").hide();
     $("#otp-label, #otp-input, #msg_success, #msg_error").hide();
+    $(".Otp_box").hide();
+    $("#logging_error, #logging_in").hide();
+    $("#AuthBtn").on("click", function (e) {
+      e.preventDefault(); // Prevent default form submission behavior
+      $("#logging_in").show();
+      $("#logging_error").hide();
+      var remember = 0;
+      if ($('#remember').attr('checked')) {
+          remember = 1;
+      }
+      var request = $.ajax({
+          url:"/ajax/otp_validate2",
+          type:"POST",
+          data:{
+              "email":$("#email").val(),
+              "otp":$("#otp").val()
+          },
+          dataType:"json",
+          success:function (data) {
+              if(data.otp==false){
+                  $("#otpResend").show();
+              }else{
+                  $("#otpResend").hide();
+              }                                    
+              if (data.success) {
+                  $(".loading").hide();
+                  swal({
+                      title: 'Success',
+                      html: 'We have emailed you instructions for resetting your password. Please check your email.',
+                      showCloseButton: true,
+                  }).then(function() {
+                      //document.location.href = url;
+                      $("#sendPasswordEmailHelp").dialog('close');
+                      });
+               } else {
+                  console.log("dfsgsdf");
+                  if (data.auth) {return false;}
+                  $("#logging_in").hide();
+                  if (data.error) {
+                      $("#logging_error").html(data.error);
+                  }
+                  $("#logging_error").show();
+                  if (data.fail=="false" || data.fail==false) {
+                      $("#otpResend").show();
+                      $("#logging_in").hide();
+                      $("#logging_error").hide();
+                      $("#msg_error").html(data.msg);
+                      $("#msg_error").show();
+                  }
+              }
+          }
+      });
+      return false;
+  });
 
-    // Handle click events for both #verify-btn and #otpResend a
-    $('#verify-btn, #otpResend a').click(function(e) {
-        e.preventDefault(); // Prevent default behavior
-        const buttonText = $(this).text();
+  //otp resend 
+// OTP Resend
+// $("#otpResend").on("click", function (e) {
+$(document).on("click", ".otpResend, #otpResend", function (e) {
 
-        if (buttonText === "Verify") {
-            // Show OTP input and send OTP
-            $('#otp-label, #otp-input').show().prop('disabled', false);
-            sendOtp();
-            $(this).text('Confirm');
-        } else if (buttonText === "Confirm") {
-            // Handle OTP confirmation
-            handleOtpConfirmation();
-        } else if ($(this).is('#otpResend a')) {
-            // Resend OTP logic
-            sendOtp();
-        }
-    });
+e.preventDefault(); // Prevent default form submission behavior
+$("#msg_error").hide();
+$("#logging_error").hide();
+$("#logging_in").show();
+$(".Otp_box").hide();
 
-    function sendOtp() {
-        $.ajax({
-            url: "/ajax/resendOtp",
-            type: "POST",
-            data: {
-                email: "<?php echo $user->getEmail() ?>",
-                valid: 1
-            },
-            dataType: "json",
-            success: function(data) {
-                if (data.auth) {
-                    $("#msg_success").html(data.msg).show();
-                    $("#msg_error").hide();
-                } else if (data.fail==0) {
-                    $("#msg_error").show();
-                    $("#msg_error").html("Failed to send OTP").show();
-                    $("#msg_success").hide();
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                $("#msg_error").html("An error occurred. Please try again.").show();
-                console.error("Request failed: " + textStatus + " - " + errorThrown);
-            }
-        });
-    }
+var method = $("input[name='2way_auth']:checked").val();
+if (!$("input[name='2way_auth']:checked").val()) {
+      event.preventDefault(); // Prevent form submission
+       $("#msg_error").html("'Please select where you would like the Verification Code sent.");
+       $("#msg_error").show();
+  
+}else{
+  $(".send_varification_code").hide();
+  $(".Otp_box").show();
+  
+  var request = $.ajax({
+  url: "/ajax/resendOtp2",
+  type: "POST",
+  data: {
+      email: $("#email").val(),
+      method:method
+  },
+  dataType: "json",
+  success: function (data) {
+      if (data.auth) {
+           $("#logging_error").hide();
+          $("#logging_in").hide();
+          $("#msg_success").html(data.msg);
+          $("#msg_success").show();
 
-    function handleOtpConfirmation() {
-        const otp = $('#otp-input').val();
-        if (otp === '') {
-            $("#msg_success").hide();
-            $("#msg_error").html("Please enter the OTP").show();
-            return;
-        }
+      } else {
+          if (data.fail) {
+              //$("#msg_success").hide();
+              $("#logging_error").hide();
+              
+          }
+      }
+  },
+  error: function (jqXHR, textStatus, errorThrown) {
+      //console.log("Request failed: " + textStatus + " - " + errorThrown);
+      $("#logging_error").html("An error occurred. Please try again.");
+  }
+});
 
-        $.ajax({
-            url: "/ajax/otp_validate",
-            type: "POST",
-            data: {
-                email: "<?php echo $user->getEmail() ?>",
-                otp: otp
-            },
-            dataType: "json",
-            success: function(data) {
-                if (data.otp === false) {
-                    $("#otpResend").show();
-                } else {
-                    $("#otpResend").hide();
-                }
-
-                if (data.success) {
-                    $("#2way_auth").val('1').change();
-                    $("#msg_error").hide();
-                    $("#otp-verification-dialog").dialog('close');
-                    $("#otp-verification-dialog").hide();
-                    $("#otp-field").hide();
+} 
+return false;
+});
+setTimeout(function() {
+$("#msg_error").hide();
+$("#msg_success").fadeOut(); // Hide the message after 5 seconds
+$("#msg_error").fadeOut();
+$("#logging_error").fadeOut();
+}, 10000); // 1000 milliseconds = 1 seconds
+//otp resend close 
  
-                    swal({
-                        title: 'OTP Verified',
-                        html: 'Setting is enabled successfully.',
-                        allowEscapeKey: false,
-                        allowOutsideClick: false,
-                        showCloseButton: true
-                    });
-                } else if (data.error) {
-                    $("#msg_error").html(data.error).show();
-                } else if (data.fail==false) {
-                    $("#msg_success").hide();
-                    console.log("sdfgsdfgsdfg");
-                    $("#msg_error").html(data.msg).show();
-                    $("#otpResend").show();
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                $("#msg_error").html("An error occurred. Please try again.").show();
-                console.error("Request failed: " + textStatus + " - " + errorThrown);
-            }
-        });
-    }
+  
 });
 
 
@@ -963,11 +985,96 @@
 </div>
 
 
-<div id="sendPasswordEmailHelp" title="Password Reset Email">
+<div id="sendPasswordEmailHelp" title="Varification Code Send">
 
-    <p id="passwordResetText"></p>
-    <br/>
+              
+            <div class="box-content">
+                <form action="#" method="post" class="validate big">
+                    <table class="boxed-table send_varification_code" cellpadding="0" cellspacing="0" width="100%">
+                        <tr class="even">
+                            <td>
+                                <p class="text-center">Resetting your password requires 2-Step Verification. Please
+                                choose where you would like your Verification Code sent.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                        <td>
+                            <div class="radio-option">
+                                <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email">
+                                <label for="auth_email"><?php echo $user->getEmail(); ?></label>
+                            </div>
+                        </td>
+                         </tr>
+                        <tr>
+                            <td>
+                                <div class="radio-option">
+                                    <input type="radio" class="radioButton" id="auth_mobile" name="2way_auth" value="mobile">
+                                    <label for="auth_mobile"><?php echo $user->getCellPhone(); ?></label>
+                                </div>
+                            </td>
+                        </tr>
 
+
+                        <tr class="even">
+                            <td>
+                                <label>&nbsp;</label>
+                                <!-- <input style="margin-left:40px;" type="submit" id="otpResend" value="Send" class="submit btn update-button" name="recover"> -->
+                           
+                                 <input id="otpResend" type="submit" value="Send" class="btn blue" role="button" aria-disabled="false">
+
+                                </td>
+                        </tr>
+ 
+ 
+                        
+                    </table>
+
+                    <!--otp box start-->
+                    <table  class="boxed-table Otp_box" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                            <td>
+                                <label>Email:</label>
+                                <input type="hidden" name="email" id="email" class="text required email" value="<?php echo $user->getEmail(); ?>">
+                                <div id="email" style="margin-top:6px;"><?php echo $user->getEmail(); ?></div>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>
+                                <label>Verification Code:</label>
+                                <input type="text" name="otp" id="otp" class="text required" autocomplete="off" maxlength="6">
+                            
+                            </td>
+                        </tr>
+                     
+                        <tr class="even">
+                            <td>
+                                
+                                <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 180px;left: 115px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
+                                <div class="otpResend" ><a href="#">Resend Verification Code</a></div>
+                             </td>
+                        </tr>
+                    
+                       
+                    </table>
+                    
+                    <!--otp box close-->
+                    <table>
+                    <tr class="even">
+                            <td>
+
+
+                                <div  style="width:280px;display:none;margin-left:2px;" id="logging_in" class="loading">Checking your credentials...</div>
+                                <div style="display:none;" id="logging_error" class="error closeonclick"></div>
+                                <div style="display:none;" id="msg_error" class="error closeonclick"></div>
+                                <div style="display:none;" id="msg_success" class="success closeonclick" style="font-color:green;"></div>
+
+
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+ 
 
 </div>
  <!-- OTP Verification Dialog -->
@@ -990,3 +1097,12 @@
         <p>Mobile Number is required for two-way Authentication.</p>
     <?php } ?>
 </div>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+    var otpResendButton = document.getElementById("otpResend");
+    if (otpResendButton) {
+        otpResendButton.style.display = "block";
+    }
+});     
+</script>

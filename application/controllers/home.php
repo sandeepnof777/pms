@@ -140,21 +140,13 @@ class Home extends MY_Controller {
             /* @var $account \models\Accounts */
             if ($account) {
                 $this->session->set_userdata('recoveremail', $account->getEmail());
+                $this->session->set_userdata('cellphone', $account->getCellPhone());
 
-                  if($account->getAuthLogin())
-                  {
-                     $this->sendOtp($account);
-                  }
-                   else{
-                    $account->sendPasswordReset();
-                    $this->log_manager->add(\models\ActivityAction::RECOVER_PASSWORD, 'User recovered password. A new password has been sent to ' . $account->getEmail());
-                    $this->session->set_flashdata('success', 'We have emailed you instructions for resetting your password. Please check your email.');
-                    redirect('home/signin');
-                  }
+                 redirect('home/send_varification_code');
+
             }
-            
             else {
-                $this->session->set_flashdata('error', 'Email not found in the database!');
+                 $this->session->set_flashdata('error', 'Email not found in the database!');
                 redirect('home/recover_password');
             }
         }
@@ -903,5 +895,31 @@ public function sendMobileOtp($to_number,$otp)
     return $result;
 }
 
+public function send_varification_code(){
+ 
+    $data['remember_email']="*******";
+    $data['cellphone']="*********";        
+
+     if($this->session->userdata('recoveremail'))
+    {
+            $email = $this->session->userdata('recoveremail');
+            // Split the email into two parts: before and after the "@" symbol
+            list($name, $domain) = explode('@', $email);
+            // Mask the part before the "@" symbol, leaving the first three characters visible
+            $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
+            $data['remember_email']=$maskedEmail;
+    }
+    if($this->session->userdata('cellphone'))
+    {
+        $mobileNo=$this->session->userdata('cellphone');
+        $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+        $data['cellphone']=$maskedNumber;        
+      
+    }
+    $this->load->view('send_varification_code',$data);
+
+}
+
+ 
 
 }

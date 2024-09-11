@@ -224,12 +224,13 @@ class Email extends RepositoryAbstract
             if (!$this->hasParameters()) {
                  return false;
             }
-             $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            //$mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            $mail->SMTPDebug = 0;  // 0 disables debugging, 1 or 2 provides more detailed information
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'svimsoftrivet@gmail.com';
-            $mail->Password = 'gcsb yxvg nbds iguc';
+            $mail->Password = 'kchx dhip ubnc wbbn';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Use STARTTLS
             $mail->Port = 587;
             $mail->setFrom('svimsoftrivet@gmail.com', $this->fromName);
@@ -307,6 +308,8 @@ class Email extends RepositoryAbstract
             // Send email
             if (!$mail->send()) {
                 // Log error and return false
+                echo "showing error";
+                echo "<br>";
                 print_r($mail->ErrorInfo);die;
                 error_log("Error sending email: {$mail->ErrorInfo}");
                 return false;
@@ -314,8 +317,8 @@ class Email extends RepositoryAbstract
             return true; // Email sent successfully
         } catch (Exception $e) {
             // Log error and return false
-            print_r($e->getMessage());die;
-            error_log("Error sending email: {$e->getMessage()}");
+            //print_r($e->getMessage());die;
+           // error_log("Error sending email: {$e->getMessage()}");
             return false;
         }
     }
@@ -410,12 +413,13 @@ class Email extends RepositoryAbstract
             if (!$this->hasParameters()) {
                 return false;
             }
-           // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            //$mail->SMTPDebug = SMTP::DEBUG_SERVER;
+          //  $mail->SMTPDebug = 0;  // 0 disables debugging, 1 or 2 provides more detailed information
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'svimsoftrivet@gmail.com';
-            $mail->Password = 'gcsb yxvg nbds iguc';
+            $mail->Password = 'kchx dhip ubnc wbbn';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Use STARTTLS
             $mail->Port = 587;
             $mail->setFrom('svimsoftrivet@gmail.com', $this->fromName);

@@ -4543,4 +4543,11 @@ die;
 
         }
     }
+
+    public function test()
+    {
+        $this->doctrine->deleteSiteAllCache();
+       echo "cache clear by deleteSiteAllCache function";die;
+   
+    }
 }

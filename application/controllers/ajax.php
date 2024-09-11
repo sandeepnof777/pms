@@ -48,7 +48,7 @@ class Ajax extends MY_Controller
         $this->imageManager = new ImageManager;
     }
 
-    public function checkLogin()
+    public function checkLoginOld()
     { 
         
          $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
@@ -112,6 +112,66 @@ class Ajax extends MY_Controller
 
                 die;
              } 
+            $this->session->sess_create($account->getAccountId());
+            $this->session->set_userdata(array(
+                'logged' => 1,
+                'accountId' => $account->getAccountId(),
+                'psaAlertShown' => '',
+            ));
+            //print_r($this->session->userdata('logged'));die;
+            $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
+            if ($this->input->post('remember')) {
+                $token = md5(time());
+                $account->setToken($token);
+                // $account = $this->em->merge($account);
+                // $this->em->persist($account);
+                // $this->em->flush();
+                // $this->em->clear();
+                $cookie = array(
+                    'name' => 'auth_token',
+                    'value' => $token,
+                    'expire' => 432000,
+                );
+                $this->input->set_cookie($cookie);
+                $authCookie = array(
+                    'name' => 'remember_email',
+                    'value' => $this->input->post('email'),
+                    'expire' => 432000,
+                );
+                $this->input->set_cookie($authCookie);
+            }
+            $account->setLastLogin(Carbon::now());
+            $account = $this->em->merge($account);
+            $this->em->persist($account);
+            $this->em->flush();
+            $this->em->clear();
+            //print_r($this->session->all_userdata());die;
+            echo json_encode(array(
+                'success' => true,
+            ));
+        }
+    }
+
+    public function checkLogin()
+    {
+        //     $account =  $this->em->getDoctrine()
+        // ->getManager()
+        // ->getRepository('models\Accounts')->findOneBy(array(
+        //     'email' => $this->input->post('email'),
+        //     'password' => md5($this->input->post('password')),
+        // ));
+
+        //$em = $this->doctrine->em;
+        $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
+            'email' => $this->input->post('email'),
+            'password' => md5($this->input->post('password')),
+        ));
+        //print_r($account->getAccountId());die;
+        if (!$account) {
+            echo json_encode(array(
+                'error' => 'Wrong email/password combination!',
+            ));
+        } else {
             $this->session->sess_create($account->getAccountId());
             $this->session->set_userdata(array(
                 'logged' => 1,
@@ -33136,9 +33196,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
 
  public function test()
  {
-    echo readableValueWithDollar("21444598.00");
-    echo "<br>";
-    $this->doctrine->deleteSiteAllCache();
+     $this->doctrine->deleteSiteAllCache();
     echo "cache clear by deleteSiteAllCache function";die;
 
  }
@@ -33249,7 +33307,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
                     );
                     $this->input->set_cookie($authCookie);
                 }
-                $account->setAuthLogin(1);
+                //$account->setAuthLogin(1);
                 $account->setLastLogin(Carbon::now());
                 $account = $this->em->merge($account);
                 $this->em->persist($account);
@@ -33289,8 +33347,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
 public function send_email_otp($email, $otp, $account)
 {
     // Fetch the email template
-    $emailTemplate = $this->doctrine->em->findAdminTemplate(57);
-
+   $emailTemplate = $this->doctrine->em->findAdminTemplate(57); 
     // Prepare dynamic data to replace in the template
     $data = [
         'lastName' => $account->getLastName(),
@@ -33298,12 +33355,12 @@ public function send_email_otp($email, $otp, $account)
         'email' => $email,
         'site_title'=>"Pavement Layers",
         'otp' => $otp,
-    ];
-
+    ]; 
     // Parse the subject and body using the new function
     //$subject = $this->parse_template($emailTemplate->getTemplateSubject(), $data);
     $content = $this->parse_template($emailTemplate->getTemplateBody(), $data);
 
+ 
     // Prepare email data
     $emailData = [
         'to' => $email,
@@ -33316,12 +33373,15 @@ public function send_email_otp($email, $otp, $account)
     // Send the OTP email
     // $emailOtpResult =  $this->getEmailRepository()->sendOtp($emailData);
 
-    // echo "<pre>";print_r($emailOtpResult);
-    // die;
+ 
+    //$this->getEmailRepository()->sendOtp($emailData);die;
 
-    return  $this->getEmailRepository()->sendOtp($emailData);
+    return  $this->getEmailRepository()->sendOtp($emailData); 
 
 }
+
+ 
+
 
 public function resendOtp(){
     $email  = $this->input->post('email');
@@ -33350,7 +33410,7 @@ public function resendOtp(){
                     // it's hide when request is come to edit_user page to resend otp 
                     //becuse we did not reload the page but when user save the setting page would be reloading 
                     //so we add condtion
-                       $this->session->set_flashdata('success', "Otp sent to your mobile number $maskedNumber");
+                       $this->session->set_flashdata('success', "Varification code sent to your mobile number $maskedNumber");
                   }
                   echo json_encode(array(
                       'auth' => true,
@@ -33490,10 +33550,216 @@ public function forget_pass_validate() {
 }
  
 
-public function testlog()
-{
+public function otp_validate2() {
+   // $email = $this->session->userdata('recoveremail');
+   $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
+
+    $account = $this->em->getRepository('models\Accounts')->findOneBy(
+        array('email' => $email)
+    );
+
+    if ($account) {
+        // Convert DateTime to Unix timestamp
+        $stored_time = $account->getOtpTime() ? $account->getOtpTime() : 0;
+        $current_time = time(); 
+        $time_diff = $current_time - $stored_time;
+        // handle for many wrong attempt
+         // Retrieve failed OTP attempts and the time of the last failed attempt
+         $failed_otp_count = $account->getFailedOtpCount();
+         $last_failed_try = $account->getLastFailedTry() ? $account->getLastFailedTry() : 0;
+         $time_diff2 = $current_time - $last_failed_try;
+   
+
+        if($this->input->post('otp')==""){
+            echo json_encode(array(
+                'fail' => false,
+                'msg'=>"OTP field is required"
+            ));
+            die; 
+        }
+
+        if(!$account->getEmailOtp())
+        {
+            echo json_encode(array(
+                'fail' => false,
+                'otp' =>  false,
+                'msg'=>"OTP expired"
+            ));
+            die;
+        }else if($account->getEmailOtp() == $this->input->post('otp')) {
+            if ($time_diff <= 120) {
+ 
+                $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
+                //$account->setAuthLogin(1);
+                $account->setLastLogin(Carbon::now());
+                $account->setFailedOtpCount(0);
+                $account = $this->em->merge($account);
+                $this->em->persist($account);
+                $this->em->flush();
+                $this->em->clear();
+                try {
+                    echo json_encode(array('success' => true, 'otp' => "valid"));
+                    $account->sendPasswordReset(); 
+                } catch (Exception $e) {
+                    // Handle the exception (log it, or notify admin)
+                    echo "<pre>";print_r($e);
+                     echo json_encode(array('fail' => false, 'msg' => 'Failed to send email. Please try again later.'));
+                }               
+                // You can continue with login or any further processing here
+            } else {
+                // OTP expired, handle accordingly
+                echo json_encode(array(
+                    'fail' => false,
+                    'msg'=>"OTP expired",
+                    'otp' =>  false
+                ));
+                $account->setEmailOtp(null); // Clear OTP after expiration
+                $this->em->persist($account);
+                $this->em->flush();
+            }
+        } else {
+            if ($failed_otp_count >= 3 && $time_diff2 < 300) { // 300 seconds = 5 minutes
+                echo json_encode(array(
+                    'fail' => false,
+                    'msg' => "Your are blocked Please try again next 5 miniutes."
+                ));
+                die;
+            }
+            // handle for many wrong attemnt
+
+                $failed_otp_count++;
+                $account->setFailedOtpCount($failed_otp_count);
+                $account->setLastFailedTry($current_time); // Record the time of failed OTP attempt
+                $account = $this->em->merge($account);
+                $this->em->persist($account);
+                $this->em->flush();
+                $this->em->clear();
+               
+                echo json_encode(array(
+                    'fail' => false,
+                    'msg'=>"OTP Not Matched"
+                ));
+        }
+    } else {
+         echo json_encode(array(
+            'fail' => false,
+            'msg'=>"Account not found with email id"
+        ));
+    }
+}
+
+
+public function resendOtp2(){
+   // $email = $this->session->userdata('recoveremail');
+   $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
+
+     $cellphone = $this->session->userdata('cellphone');
+    $valid = $this->input->post('valid');
+    $method =  $this->input->post('method'); 
+    $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
+        'email' => $email
+    ));
+ 
+   
+    if($method=="mobile")
+    {
+        $mobileNo = $account->getCellPhone();
+        $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+
+        $msg =  "A code has been sent to your mobile the code will expire in 10 minutes ".$maskedNumber;
+    }
+    else {
+         $email  = $account->getEmail();
+         list($name, $domain) = explode('@', $email);
+         // Mask the part before the "@" symbol, leaving the first three characters visible
+         $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
+         $msg =  "A code has been sent to your email the code will expire in 10 minutes ".$maskedEmail;
+    } 
+     
+    if (!$account->getEmail()) {
+        echo json_encode(array(
+            'error' => 'Email Not Exist!',
+        ));
+    }else if (!$account->getCellPhone())
+    {
+        echo json_encode(array(
+            'error' => 'CellPhone Not Exist!',
+        ));
+    }
+    else if($account->getEmail() || $account->getCellPhone())
+         {
+            $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
+            $current_time = time(); // Get current time
+            $mobileNo = $account->getCellPhone();
+            if($method=="mobile"){
+                $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
+                 if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
+                {
+                    $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+
+                  if(!$valid){
+                    // it's hide when request is come to edit_user page to resend otp 
+                    //becuse we did not reload the page but when user save the setting page would be reloading 
+                    //so we add condtion
+                       $this->session->set_flashdata('success', $msg);
+                       
+                  }
+                  echo json_encode(array(
+                      'auth' => true,
+                      'mobileAuth'=>true,
+                      'msg'=> $msg,
+                      'method'=>$method
+                  ));
+                }else{
+                  echo json_encode(array(
+                      'auth' => false,'mobileAuth'=>false,"fail"=>0
+                  ));die;
+                }
+            }else{
+                // Print the entire session data
+                $emailOtpResult = $this->send_email_otp($email,$generated_otp,$account);
+                if($emailOtpResult)
+                {
+                    echo json_encode(array(
+                        'auth' => true,
+                        'emailAuth'=>true,
+                        'method'=>$method,
+                        'msg'=>$msg
+
+                    ));
+                }else{
+                 echo json_encode(array(
+                     'auth' => false,
+                     'emailAuth'=>false,
+                     'method'=>$method
+
+                 ));die;
+
+                }
+            }
+            $account->setEmailOtp($generated_otp);
+            $account->setOtpTime($current_time); // Save the current timestamp
+            $this->em->persist($account);
+            $this->em->flush();
+            $this->em->clear();
+            die;
+          
+         }
+         else{
+                // echo '<pre>';
+                // print_r($this->session->all_userdata());
+                // echo '</pre>';
+            echo json_encode(array(
+                'error' => 'User Not Authenticate!',
+            ));
+         }
+
+         
+ 
+    die;
 
 }
+ 
 
 
 
