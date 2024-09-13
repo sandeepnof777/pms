@@ -782,6 +782,11 @@
    
     
     // Initially hide OTP-related fields and messages
+    $(document).on("keypress", function (e) {
+        if (e.which == 13) {  // 13 is the keycode for the "Enter" key
+            e.preventDefault(); // Prevent the default form submission
+        }
+    });
     $("#otpResend").hide();
     $("#otp-label, #otp-input, #msg_success, #msg_error").hide();
     $(".Otp_box").hide();
@@ -810,6 +815,7 @@
               }                                    
               if (data.success) {
                   $(".loading").hide();
+                  $("#logging_error").hide();
                   swal({
                       title: 'Success',
                       html: 'We have emailed you instructions for resetting your password. Please check your email.',
@@ -819,7 +825,6 @@
                       $("#sendPasswordEmailHelp").dialog('close');
                       });
                } else {
-                  console.log("dfsgsdf");
                   if (data.auth) {return false;}
                   $("#logging_in").hide();
                   if (data.error) {
@@ -827,11 +832,12 @@
                   }
                   $("#logging_error").show();
                   if (data.fail=="false" || data.fail==false) {
-                      $("#otpResend").show();
-                      $("#logging_in").hide();
-                      $("#logging_error").hide();
-                      $("#msg_error").html(data.msg);
-                      $("#msg_error").show();
+                        $("#otpResend").show();
+                        //   $("#msg_success").hide();
+                        $("#logging_in").hide();
+                        $("#logging_error").hide();
+                        $("#msg_error").html(data.msg);
+                        $("#msg_error").show();
                   }
               }
           }
@@ -839,9 +845,7 @@
       return false;
   });
 
-  //otp resend 
 // OTP Resend
-// $("#otpResend").on("click", function (e) {
 $(document).on("click", ".otpResend, #otpResend", function (e) {
 
 e.preventDefault(); // Prevent default form submission behavior
@@ -857,10 +861,7 @@ if (!$("input[name='2way_auth']:checked").val()) {
        $("#msg_error").show();
   
 }else{
-  $(".send_varification_code").hide();
-  $(".Otp_box").show();
-  
-  var request = $.ajax({
+    var request = $.ajax({
   url: "/ajax/resendOtp2",
   type: "POST",
   data: {
@@ -870,16 +871,19 @@ if (!$("input[name='2way_auth']:checked").val()) {
   dataType: "json",
   success: function (data) {
       if (data.auth) {
+        $(".Otp_box").show();
+        $(".send_varification_code").hide();
            $("#logging_error").hide();
           $("#logging_in").hide();
           $("#msg_success").html(data.msg);
           $("#msg_success").show();
 
       } else {
-          if (data.fail) {
-              //$("#msg_success").hide();
-              $("#logging_error").hide();
-              
+          if (!data.fail) {
+            $("#msg_error").text(data.msg);
+            $("#msg_error").show();
+            $("#logging_error").hide();
+            $("#logging_in").hide();
           }
       }
   },
@@ -891,15 +895,7 @@ if (!$("input[name='2way_auth']:checked").val()) {
 
 } 
 return false;
-});
-setTimeout(function() {
-$("#msg_error").hide();
-$("#msg_success").fadeOut(); // Hide the message after 5 seconds
-$("#msg_error").fadeOut();
-$("#logging_error").fadeOut();
-}, 10000); // 1000 milliseconds = 1 seconds
-//otp resend close 
- 
+}); 
   
 });
 
@@ -985,8 +981,17 @@ $("#logging_error").fadeOut();
 </div>
 
 
-<div id="sendPasswordEmailHelp" title="Varification Code Send">
+<div id="sendPasswordEmailHelp" title="Verification Code Send">
+          <?php 
+            $mobileNo = $user->getCellPhone();
+            $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
 
+            $email  = $user->getEmail();
+            list($name, $domain) = explode('@', $email);
+            // Mask the part before the "@" symbol, leaving the first three characters visible
+            $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
+
+          ?>
               
             <div class="box-content">
                 <form action="#" method="post" class="validate big">
@@ -1001,7 +1006,7 @@ $("#logging_error").fadeOut();
                         <td>
                             <div class="radio-option">
                                 <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email">
-                                <label for="auth_email"><?php echo $user->getEmail(); ?></label>
+                                <label for="auth_email"><?php echo $maskedEmail; ?></label>
                             </div>
                         </td>
                          </tr>
@@ -1009,7 +1014,7 @@ $("#logging_error").fadeOut();
                             <td>
                                 <div class="radio-option">
                                     <input type="radio" class="radioButton" id="auth_mobile" name="2way_auth" value="mobile">
-                                    <label for="auth_mobile"><?php echo $user->getCellPhone(); ?></label>
+                                    <label for="auth_mobile"><?php echo $maskedNumber; ?></label>
                                 </div>
                             </td>
                         </tr>
@@ -1031,13 +1036,13 @@ $("#logging_error").fadeOut();
 
                     <!--otp box start-->
                     <table  class="boxed-table Otp_box" cellpadding="0" cellspacing="0" width="100%">
-                        <tr>
+                        <!-- <tr>
                             <td>
                                 <label>Email:</label>
                                 <input type="hidden" name="email" id="email" class="text required email" value="<?php echo $user->getEmail(); ?>">
                                 <div id="email" style="margin-top:6px;"><?php echo $user->getEmail(); ?></div>
                             </td>
-                        </tr>
+                        </tr> -->
                         <tr class="even">
                             <td>
                                 <label>Verification Code:</label>
@@ -1050,7 +1055,7 @@ $("#logging_error").fadeOut();
                             <td>
                                 
                                 <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 180px;left: 115px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
-                                <div class="otpResend" ><a href="#">Resend Verification Code</a></div>
+                                <div class="otpResend" style="margin-top:5px;"><a href="#">Resend Verification Code</a></div>
                              </td>
                         </tr>
                     

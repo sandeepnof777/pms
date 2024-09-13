@@ -142,7 +142,7 @@ class Home extends MY_Controller {
                 $this->session->set_userdata('recoveremail', $account->getEmail());
                 $this->session->set_userdata('cellphone', $account->getCellPhone());
 
-                 redirect('home/send_varification_code');
+                 redirect('home/send_verification_code');
 
             }
             else {
@@ -895,8 +895,13 @@ public function sendMobileOtp($to_number,$otp)
     return $result;
 }
 
-public function send_varification_code(){
+public function send_verification_code(){
  
+    if(!$this->session->userdata('cellphone') || !$this->session->userdata('recoveremail'))
+    {
+        redirect('Account');
+    }
+
     $data['remember_email']="*******";
     $data['cellphone']="*********";        
 
@@ -916,6 +921,19 @@ public function send_varification_code(){
         $data['cellphone']=$maskedNumber;        
       
     }
+    $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
+    $account = $this->em->getRepository('models\Accounts')->findOneBy(
+        array('email' => $email)
+    );
+    // Add failed OTP count and time difference
+    $current_time = time();
+    $last_failed_try = $account->getLastFailedTry() ? $account->getLastFailedTry() : 0;
+    $failed_otp_count = $account->getFailedOtpCount();
+    $time_diff2 = $current_time - $last_failed_try;
+
+    $data['failed_otp_count'] = $failed_otp_count;
+    $data['time_diff2'] = $time_diff2;
+    
     $this->load->view('send_varification_code',$data);
 
 }

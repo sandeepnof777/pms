@@ -48,109 +48,7 @@ class Ajax extends MY_Controller
         $this->imageManager = new ImageManager;
     }
 
-    public function checkLoginOld()
-    { 
-        
-         $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
-            'email' => $this->input->post('email'),
-            'password' => md5($this->input->post('password')),
-        ));
-       // print_r($account->getAccountId());die;
-        if (!$account) {
-            echo json_encode(array(
-                'error' => 'Wrong email/password combination!',
-            ));
-        } else {
-             if($account->getAuthLogin())
-             {
-                $mobileNo = $account->getCellPhone();
-                $this->session->set_userdata('useremail', $this->input->post('email'));
-                $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
-                $current_time = time(); // Get current time
-                $account->setEmailOtp($generated_otp);
-                $account->setOtpTime($current_time); // Save the current timestamp
-                $this->em->persist($account);
-                $this->em->flush();
-                $this->em->clear();
-                // Print the entire session data
-             //   $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
-               // $this->send_mobile_otp();
-               if($mobileNo)
-               {
-                  $mobileOtpResult =  $this->sendMobileOtp($mobileNo,$generated_otp);
-                  if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
-                  {
-                       $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
-                       $this->session->set_flashdata('success', "Otp sent to your mobile number $maskedNumber");
-
-                    echo json_encode(array(
-                        'auth' => true,
-                        'mobileAuth'=>true
-                    ));
-                  }else{
-                    echo json_encode(array(
-                        'auth' => false,'mobileAuth'=>false
-                    ));
-                  }
-               }else{
-                      $this->session->set_flashdata('success', 'Otp sent to your email id');
-                   $emailOtpResult =  $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
-                   if($emailOtpResult)
-                   {
-                       echo json_encode(array(
-                           'auth' => true,
-                           'emailAuth'=>true
-                       ));
-                   }else{
-                    echo json_encode(array(
-                        'auth' => false,
-                        'emailAuth'=>false
-                    ));
-
-                   }
-               }
-
-                die;
-             } 
-            $this->session->sess_create($account->getAccountId());
-            $this->session->set_userdata(array(
-                'logged' => 1,
-                'accountId' => $account->getAccountId(),
-                'psaAlertShown' => '',
-            ));
-            //print_r($this->session->userdata('logged'));die;
-            $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
-            if ($this->input->post('remember')) {
-                $token = md5(time());
-                $account->setToken($token);
-                // $account = $this->em->merge($account);
-                // $this->em->persist($account);
-                // $this->em->flush();
-                // $this->em->clear();
-                $cookie = array(
-                    'name' => 'auth_token',
-                    'value' => $token,
-                    'expire' => 432000,
-                );
-                $this->input->set_cookie($cookie);
-                $authCookie = array(
-                    'name' => 'remember_email',
-                    'value' => $this->input->post('email'),
-                    'expire' => 432000,
-                );
-                $this->input->set_cookie($authCookie);
-            }
-            $account->setLastLogin(Carbon::now());
-            $account = $this->em->merge($account);
-            $this->em->persist($account);
-            $this->em->flush();
-            $this->em->clear();
-            //print_r($this->session->all_userdata());die;
-            echo json_encode(array(
-                'success' => true,
-            ));
-        }
-    }
+  
 
     public function checkLogin()
     {
@@ -33255,95 +33153,7 @@ $this->session->set_userdata('pStatusFilterTo', $this->input->post('accFilterTo'
     }
   }
 
-  public function otp_validate() {
-    $account = $this->em->getRepository('models\Accounts')->findOneBy(
-        array('email' => $this->input->post('email'))
-    );
-
-    if ($account) {
-        // Convert DateTime to Unix timestamp
-        $stored_time = $account->getOtpTime() ? $account->getOtpTime() : 0;
-        $current_time = time(); 
-        $time_diff = $current_time - $stored_time;
-
-        if($this->input->post('otp')==""){
-            echo json_encode(array(
-                'fail' => false,
-                'msg'=>"OTP field is required"
-            ));
-            die; 
-        }
-
-        if(!$account->getEmailOtp())
-        {
-            echo json_encode(array(
-                'fail' => false,
-                'otp' =>  false,
-                'msg'=>"OTP expired"
-            ));
-            die;
-        }else if($account->getEmailOtp() == $this->input->post('otp')) {
-            if ($time_diff <= 120) {
-                $this->session->sess_create($account->getAccountId());
-                $this->session->set_userdata(array(
-                    'logged' => 1,
-                    'accountId' => $account->getAccountId(),
-                    'psaAlertShown' => '',
-                ));
-                $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
-                if ($this->input->post('remember')) {
-                    $token = md5(time());
-                    $account->setToken($token); 
-                    $cookie = array(
-                        'name' => 'auth_token',
-                        'value' => $token,
-                        'expire' => 432000,
-                    );
-                    $this->input->set_cookie($cookie);
-                    $authCookie = array(
-                        'name' => 'remember_email',
-                        'value' => $this->input->post('email'),
-                        'expire' => 432000,
-                    );
-                    $this->input->set_cookie($authCookie);
-                }
-                //$account->setAuthLogin(1);
-                $account->setLastLogin(Carbon::now());
-                $account = $this->em->merge($account);
-                $this->em->persist($account);
-                $this->em->flush();
-                $this->em->clear();
-                echo json_encode(array(
-                    'success' => true,
-                    'otp'=>"valid"
-                ));
-                // You can continue with login or any further processing here
-            } else {
-                // OTP expired, handle accordingly
-                echo json_encode(array(
-                    'fail' => false,
-                    'msg'=>"OTP expired",
-                    'otp' =>  false
-                ));
-                $account->setEmailOtp(null); // Clear OTP after expiration
-                $this->em->persist($account);
-                $this->em->flush();
-            }
-        } else {
-             echo json_encode(array(
-                'fail' => false,
-                'msg'=>"OTP Not Matched"
-            ));
-        }
-    } else {
-         echo json_encode(array(
-            'fail' => false,
-            'msg'=>"Account not found with email id"
-        ));
-    }
-}
- 
-
+  
 public function send_email_otp($email, $otp, $account)
 {
     // Fetch the email template
@@ -33357,10 +33167,7 @@ public function send_email_otp($email, $otp, $account)
         'otp' => $otp,
     ]; 
     // Parse the subject and body using the new function
-    //$subject = $this->parse_template($emailTemplate->getTemplateSubject(), $data);
     $content = $this->parse_template($emailTemplate->getTemplateBody(), $data);
-
- 
     // Prepare email data
     $emailData = [
         'to' => $email,
@@ -33371,96 +33178,11 @@ public function send_email_otp($email, $otp, $account)
     ];
 
     // Send the OTP email
-    // $emailOtpResult =  $this->getEmailRepository()->sendOtp($emailData);
-
- 
-    //$this->getEmailRepository()->sendOtp($emailData);die;
-
-    return  $this->getEmailRepository()->sendOtp($emailData); 
+     return  $this->getEmailRepository()->sendOtp($emailData); 
 
 }
 
  
-
-
-public function resendOtp(){
-    $email  = $this->input->post('email');
-    $valid = $this->input->post('valid');
-    $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
-        'email' => $this->input->post('email')
-    ));
-
-     
-    if (!$account) {
-        echo json_encode(array(
-            'error' => 'Email Not Exist!',
-        ));
-    } else if($account->getEmail() && $account->getEmail()==trim($email))
-         {
-            $generated_otp = rand(100000, 999999); // Generate a 6-digit OTP
-            $current_time = time(); // Get current time
-            $mobileNo = $account->getCellPhone();
-            if($mobileNo){
-                $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
-                 if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
-                {
-                    $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
-
-                  if(!$valid){
-                    // it's hide when request is come to edit_user page to resend otp 
-                    //becuse we did not reload the page but when user save the setting page would be reloading 
-                    //so we add condtion
-                       $this->session->set_flashdata('success', "Varification code sent to your mobile number $maskedNumber");
-                  }
-                  echo json_encode(array(
-                      'auth' => true,
-                      'mobileAuth'=>true,
-                      'msg'=> "Otp sent to your mobile number ".$maskedNumber
-                  ));
-                }else{
-                  echo json_encode(array(
-                      'auth' => false,'mobileAuth'=>false,"fail"=>0
-                  ));die;
-                }
-            }else{
-                // Print the entire session data
-                $emailOtpResult = $this->send_email_otp($this->input->post('email'),$generated_otp,$account);
-                if($emailOtpResult)
-                {
-                    echo json_encode(array(
-                        'auth' => true,
-                        'emailAuth'=>true
-                    ));
-                }else{
-                 echo json_encode(array(
-                     'auth' => false,
-                     'emailAuth'=>false
-                 ));die;
-
-                }
-            }
-            $account->setEmailOtp($generated_otp);
-            $account->setOtpTime($current_time); // Save the current timestamp
-            $this->em->persist($account);
-            $this->em->flush();
-            $this->em->clear();
-            die;
-          
-         }
-         else{
-                // echo '<pre>';
-                // print_r($this->session->all_userdata());
-                // echo '</pre>';
-            echo json_encode(array(
-                'error' => 'User Not Authenticate!',
-            ));
-         }
-
-         
- 
-    die;
-
-}
 
 public function parse_template($template, $data) {
     foreach ($data as $key => $value) {
@@ -33475,10 +33197,6 @@ public function sendMobileOtp($to_number,$otp)
     $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
    
     $mobileNo = ['9039181447','9826778111'];
-    // if (substr($to_number, 0, 1) !== '+') {
-    //     // If it doesn't, prepend the country code (+91 for India)
-    //     $to_number = '+91' . $to_number;
-    // }
      // Check if the number exists in the array
      if (in_array($to_number, $mobileNo)) {
         // Prepend the country code for India (+91)
@@ -33538,7 +33256,7 @@ public function forget_pass_validate() {
         } else {
              echo json_encode(array(
                 'fail' => false,
-                'msg'=>"OTP Not Matched"
+                'msg'=>"Incorrect Verification Code. Please try again."
             ));
         }
     } else {
@@ -33553,7 +33271,6 @@ public function forget_pass_validate() {
 public function otp_validate2() {
    // $email = $this->session->userdata('recoveremail');
    $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
-
     $account = $this->em->getRepository('models\Accounts')->findOneBy(
         array('email' => $email)
     );
@@ -33569,25 +33286,36 @@ public function otp_validate2() {
          $last_failed_try = $account->getLastFailedTry() ? $account->getLastFailedTry() : 0;
          $time_diff2 = $current_time - $last_failed_try;
    
-
         if($this->input->post('otp')==""){
             echo json_encode(array(
                 'fail' => false,
-                'msg'=>"OTP field is required"
+                'msg'=>"Verification field is required"
             ));
             die; 
+        }elseif(strlen($this->input->post('otp')) < 6) {
+            echo json_encode(array(
+                'fail' => false,
+                'msg' => "Verification must be at least 6 digit long"
+            ));
+            die;
         }
-
-        if(!$account->getEmailOtp())
+        elseif($failed_otp_count == 3 &&  $time_diff2 < 60 && $account->getEmailOtp() != $this->input->post('otp')) { // 300 seconds = 5 minutes
+            echo json_encode(array(
+                'fail' => false,
+                'msg' => "Too many failed attempts. Please wait 5 minutes, then try again."
+            )); 
+            die;
+        }      
+        elseif(!$account->getEmailOtp())
         {
             echo json_encode(array(
                 'fail' => false,
                 'otp' =>  false,
-                'msg'=>"OTP expired"
+                'msg'=>"Verfication Code  expired"
             ));
             die;
         }else if($account->getEmailOtp() == $this->input->post('otp')) {
-            if ($time_diff <= 120) {
+            if ($time_diff <= 600) {
  
                 $this->log_manager->add(\models\ActivityAction::LOGIN, 'User successfully logged in.');
                 //$account->setAuthLogin(1);
@@ -33602,7 +33330,6 @@ public function otp_validate2() {
                     $account->sendPasswordReset(); 
                 } catch (Exception $e) {
                     // Handle the exception (log it, or notify admin)
-                    echo "<pre>";print_r($e);
                      echo json_encode(array('fail' => false, 'msg' => 'Failed to send email. Please try again later.'));
                 }               
                 // You can continue with login or any further processing here
@@ -33610,7 +33337,7 @@ public function otp_validate2() {
                 // OTP expired, handle accordingly
                 echo json_encode(array(
                     'fail' => false,
-                    'msg'=>"OTP expired",
+                    'msg'=>"Verification code expired",
                     'otp' =>  false
                 ));
                 $account->setEmailOtp(null); // Clear OTP after expiration
@@ -33618,7 +33345,7 @@ public function otp_validate2() {
                 $this->em->flush();
             }
         } else {
-            if ($failed_otp_count >= 3 && $time_diff2 < 300) { // 300 seconds = 5 minutes
+            if ($failed_otp_count == 3) { // 300 seconds = 5 minutes
                 echo json_encode(array(
                     'fail' => false,
                     'msg' => "Your are blocked Please try again next 5 miniutes."
@@ -33628,6 +33355,9 @@ public function otp_validate2() {
             // handle for many wrong attemnt
 
                 $failed_otp_count++;
+                if($failed_otp_count==4){
+                    $failed_otp_count=0;
+                }
                 $account->setFailedOtpCount($failed_otp_count);
                 $account->setLastFailedTry($current_time); // Record the time of failed OTP attempt
                 $account = $this->em->merge($account);
@@ -33637,7 +33367,7 @@ public function otp_validate2() {
                
                 echo json_encode(array(
                     'fail' => false,
-                    'msg'=>"OTP Not Matched"
+                    'msg'=>"Incorrect Verification Code. Please try again."
                 ));
         }
     } else {
@@ -33659,6 +33389,28 @@ public function resendOtp2(){
     $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
         'email' => $email
     ));
+
+    //Trying to validating 5 miniutes worng otp case
+    $stored_time = $account->getOtpTime() ? $account->getOtpTime() : 0;
+    $current_time = time(); 
+    $time_diff = $current_time - $stored_time;
+    // handle for many wrong attempt
+     // Retrieve failed OTP attempts and the time of the last failed attempt
+     $failed_otp_count = $account->getFailedOtpCount();
+     $last_failed_try = $account->getLastFailedTry() ? $account->getLastFailedTry() : 0;
+     $time_diff2 = $current_time - $last_failed_try;
+
+   
+    if($failed_otp_count >= 3 &&  $time_diff2 < 60) { // 300 seconds = 5 minutes
+        echo json_encode(array(
+            'fail' => false,
+            'auth' => false,
+            'emailAuth'=>false,
+            'msg' => "Too many failed attempts. Please wait 5 minutes, then try again."
+        )); 
+        die;
+    }  
+    // close
  
    
     if($method=="mobile")
@@ -33666,14 +33418,14 @@ public function resendOtp2(){
         $mobileNo = $account->getCellPhone();
         $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
 
-        $msg =  "A code has been sent to your mobile the code will expire in 10 minutes ".$maskedNumber;
+        $msg =  "A 6-digit code has been sent to your mobile the code will expire in 10 minutes ".$maskedNumber;
     }
     else {
          $email  = $account->getEmail();
          list($name, $domain) = explode('@', $email);
          // Mask the part before the "@" symbol, leaving the first three characters visible
          $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
-         $msg =  "A code has been sent to your email the code will expire in 10 minutes ".$maskedEmail;
+         $msg =  "A 6-digit code has been sent to your email the code will expire in 10 minutes ".$maskedEmail;
     } 
      
     if (!$account->getEmail()) {
@@ -33737,6 +33489,7 @@ public function resendOtp2(){
 
                 }
             }
+            $account->setFailedOtpCount(0);
             $account->setEmailOtp($generated_otp);
             $account->setOtpTime($current_time); // Save the current timestamp
             $this->em->persist($account);
@@ -33752,10 +33505,7 @@ public function resendOtp2(){
             echo json_encode(array(
                 'error' => 'User Not Authenticate!',
             ));
-         }
-
-         
- 
+         } 
     die;
 
 }
