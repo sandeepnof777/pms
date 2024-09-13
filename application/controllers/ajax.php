@@ -33416,15 +33416,14 @@ public function resendOtp2(){
     if($method=="mobile")
     {
         $mobileNo = $account->getCellPhone();
-        $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
-
+        $maskedNumber = str_repeat('x', 3) . '-' . str_repeat('x', 3) . '-' . substr($mobileNo, -4);
         $msg =  "A 6-digit code has been sent to your mobile the code will expire in 10 minutes ".$maskedNumber;
     }
     else {
          $email  = $account->getEmail();
          list($name, $domain) = explode('@', $email);
          // Mask the part before the "@" symbol, leaving the first three characters visible
-         $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
+         $maskedEmail = substr($name, 0, 3) . str_repeat('x', strlen($name) - 3) . '@' . $domain;
          $msg =  "A 6-digit code has been sent to your email the code will expire in 10 minutes ".$maskedEmail;
     } 
      
@@ -33447,15 +33446,8 @@ public function resendOtp2(){
                 $mobileOtpResult = $this->sendMobileOtp($mobileNo,$generated_otp);
                  if(!empty($mobileOtpResult) && $mobileOtpResult['success']==1)
                 {
-                    $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
-
-                  if(!$valid){
-                    // it's hide when request is come to edit_user page to resend otp 
-                    //becuse we did not reload the page but when user save the setting page would be reloading 
-                    //so we add condtion
-                       $this->session->set_flashdata('success', $msg);
-                       
-                  }
+                    $maskedNumber = str_repeat('x', 3) . '-' . str_repeat('x', 3) . '-' . substr($mobileNo, -4);
+ 
                   echo json_encode(array(
                       'auth' => true,
                       'mobileAuth'=>true,

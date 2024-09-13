@@ -80,10 +80,18 @@
      text-align: left!important; 
  }
 
- div.error, div.success{
- 
-    width: 300px!important;
-    margin-left:5px!important;
+  div.success{
+    width: 345px!important;
+}
+div#logging_error  {
+  width: 345px!important;
+}
+
+div#logging_in  {
+  width: 325px!important;
+} 
+ div#msg_error {
+  width: 345px!important;
 }
  .Otp_box label{
     width: unset !important;
@@ -782,6 +790,11 @@
    
     
     // Initially hide OTP-related fields and messages
+    $('#auth_email').prop('checked', true);    
+    // If you're using a custom styling library like Uniform.js or something similar, refresh the state
+    if ($.uniform) {
+        $.uniform.update('#auth_email');
+    }
     $(document).on("keypress", function (e) {
         if (e.which == 13) {  // 13 is the keycode for the "Enter" key
             e.preventDefault(); // Prevent the default form submission
@@ -857,9 +870,9 @@ $(".Otp_box").hide();
 var method = $("input[name='2way_auth']:checked").val();
 if (!$("input[name='2way_auth']:checked").val()) {
       event.preventDefault(); // Prevent form submission
-       $("#msg_error").html("'Please select where you would like the Verification Code sent.");
+       $("#msg_error").html("Please select where you would like the Verification Code sent.");
        $("#msg_error").show();
-  
+       $("#logging_in").hide();      
 }else{
     var request = $.ajax({
   url: "/ajax/resendOtp2",
@@ -984,12 +997,12 @@ return false;
 <div id="sendPasswordEmailHelp" title="Verification Code Send">
           <?php 
             $mobileNo = $user->getCellPhone();
-            $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
-
-            $email  = $user->getEmail();
-            list($name, $domain) = explode('@', $email);
+           // $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+             $maskedNumber = str_repeat('x', 3) . '-' . str_repeat('x', 3) . '-' . substr($mobileNo, -4);
+             $email  = $user->getEmail();
+             list($name, $domain) = explode('@', $email);
             // Mask the part before the "@" symbol, leaving the first three characters visible
-            $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
+             $maskedEmail = substr($name, 0, 3) . str_repeat('x', strlen($name) - 3) . '@' . $domain;
 
           ?>
               
@@ -1005,7 +1018,8 @@ return false;
                         <tr>
                         <td>
                             <div class="radio-option">
-                                <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email">
+                                <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email"
+                                <?php echo isset($maskedEmail) ? 'checked' : ''; ?>>
                                 <label for="auth_email"><?php echo $maskedEmail; ?></label>
                             </div>
                         </td>
@@ -1054,8 +1068,8 @@ return false;
                         <tr class="even">
                             <td>
                                 
-                                <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 180px;left: 115px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
-                                <div class="otpResend" style="margin-top:5px;"><a href="#">Resend Verification Code</a></div>
+                                <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 160px;left: 121px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
+                                <div class="otpResend" style="margin-top:12px;"><a href="#">Resend Verification Code</a></div>
                              </td>
                         </tr>
                     
@@ -1068,7 +1082,7 @@ return false;
                             <td>
 
 
-                                <div  style="width:280px;display:none;margin-left:2px;" id="logging_in" class="loading">Checking your credentials...</div>
+                                <div   id="logging_in" class="loading">Checking your credentials...</div>
                                 <div style="display:none;" id="logging_error" class="error closeonclick"></div>
                                 <div style="display:none;" id="msg_error" class="error closeonclick"></div>
                                 <div style="display:none;" id="msg_success" class="success closeonclick" style="font-color:green;"></div>

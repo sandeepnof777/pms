@@ -911,13 +911,13 @@ public function send_verification_code(){
             // Split the email into two parts: before and after the "@" symbol
             list($name, $domain) = explode('@', $email);
             // Mask the part before the "@" symbol, leaving the first three characters visible
-            $maskedEmail = substr($name, 0, 3) . str_repeat('*', strlen($name) - 3) . '@' . $domain;
+            $maskedEmail = substr($name, 0, 3) . str_repeat('x', strlen($name) - 3) . '@' . $domain;
             $data['remember_email']=$maskedEmail;
     }
     if($this->session->userdata('cellphone'))
     {
         $mobileNo=$this->session->userdata('cellphone');
-        $maskedNumber = str_repeat('*', strlen($mobileNo) - 4) . substr($mobileNo, -4);
+        $maskedNumber = str_repeat('x', 3) . '-' . str_repeat('x', 3) . '-' . substr($mobileNo, -4);
         $data['cellphone']=$maskedNumber;        
       
     }

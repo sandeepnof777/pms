@@ -22,6 +22,13 @@
     width: 300px!important;
     margin-left:5px!important;
 }
+#login-box label {
+    width: 110px!important;
+}
+
+#login-box .text {
+    width: 170px!important;
+}
  
 </style>
 <div style="padding: 100px 0 0;">
@@ -42,8 +49,13 @@
                         <tr>
                         <td>
                             <div class="radio-option">
-                                <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email">
-                                <label for="auth_email"><?php if($remember_email){echo $remember_email;} ?></label>
+                                <!-- <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email" checked>
+                                <label for="auth_email"><?php if($remember_email){echo $remember_email;} ?></label> -->
+                                <input type="radio" class="radioButton" id="auth_email" name="2way_auth" value="email" 
+                                <?php echo isset($remember_email) ? 'checked' : ''; ?>>
+                                <label for="auth_email"><?php if($remember_email){ echo $remember_email; } ?></label>
+
+
                             </div>
                         </td>
                          </tr>
@@ -67,13 +79,6 @@
                     </table>
                     <!--otp box start-->
                     <table  class="boxed-table Otp_box" cellpadding="0" cellspacing="0" width="100%">
-                        <!-- <tr>
-                            <td>
-                                <label>Email:</label>
-                                <input type="hidden" name="email" id="email" class="text required email" value="<?= $remember_email; ?>">
-                                <div id="email" style="margin-top:6px;"><?= $remember_email; ?></div>
-                            </td>
-                        </tr> -->
                         <tr class="even">
                             <td>
                                 <label>Verification Code:</label>
@@ -85,8 +90,8 @@
                         <tr class="even">
                             <td>
                                 
-                                <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 180px;left: 115px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
-                                <div class="otpResend" id="otpResend"><a href="#">Resend Verification Code</a></div>
+                                <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 180px;left: 120px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
+                                <div class="otpResend" id="otpResend" style="margin-top:12px;"><a href="#">Resend Verification Code</a></div>
 
                              </td>
                         </tr>
@@ -111,7 +116,10 @@
     </div>
 </div>
 <script type="text/javascript">
+ 
     $(document).ready(function () {
+   
+
         $(document).on("keypress", function (e) {
         if (e.which == 13) {  // 13 is the keycode for the "Enter" key
             e.preventDefault(); // Prevent the default form submission
@@ -128,7 +136,6 @@
                 remember = 1;
             }
             var url = '<?php echo site_url('account/logout') ?>';
-
             var request = $.ajax({
                 url:"/ajax/otp_validate2",
                 type:"POST",
