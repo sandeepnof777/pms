@@ -33269,7 +33269,6 @@ public function forget_pass_validate() {
  
 
 public function otp_validate2() {
-   // $email = $this->session->userdata('recoveremail');
    $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
     $account = $this->em->getRepository('models\Accounts')->findOneBy(
         array('email' => $email)
@@ -33299,10 +33298,12 @@ public function otp_validate2() {
             ));
             die;
         }
-        elseif($failed_otp_count == 3 &&  $time_diff2 < 60 && $account->getEmailOtp() != $this->input->post('otp')) { // 300 seconds = 5 minutes
+        elseif($failed_otp_count == 2 &&  $time_diff2 < 60 && $account->getEmailOtp() != $this->input->post('otp')) { // 300 seconds = 5 minutes
+            $remaining_time = 60 - $time_diff2;  // Time left for the countdown
             echo json_encode(array(
                 'fail' => false,
-                'msg' => "Too many failed attempts. Please wait 5 minutes, then try again."
+                'msg' => "Too many failed attempts. Please wait 5 minutes, then try again.",
+                'time'=> $remaining_time
             )); 
             die;
         }      
@@ -33345,7 +33346,7 @@ public function otp_validate2() {
                 $this->em->flush();
             }
         } else {
-            if ($failed_otp_count == 3) { // 300 seconds = 5 minutes
+            if ($failed_otp_count == 2) { // 300 seconds = 5 minutes
                 echo json_encode(array(
                     'fail' => false,
                     'msg' => "Your are blocked Please try again next 5 miniutes."
@@ -33353,9 +33354,8 @@ public function otp_validate2() {
                 die;
             }
             // handle for many wrong attemnt
-
                 $failed_otp_count++;
-                if($failed_otp_count==4){
+                if($failed_otp_count==3){
                     $failed_otp_count=0;
                 }
                 $account->setFailedOtpCount($failed_otp_count);
@@ -33380,10 +33380,8 @@ public function otp_validate2() {
 
 
 public function resendOtp2(){
-   // $email = $this->session->userdata('recoveremail');
-   $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
-
-     $cellphone = $this->session->userdata('cellphone');
+    $email = $this->session->userdata('recoveremail') ? $this->session->userdata('recoveremail') : $this->input->post('email');
+    $cellphone = $this->session->userdata('cellphone');
     $valid = $this->input->post('valid');
     $method =  $this->input->post('method'); 
     $account = $this->em->getRepository("models\Accounts")->findOneBy(array(
@@ -33399,20 +33397,18 @@ public function resendOtp2(){
      $failed_otp_count = $account->getFailedOtpCount();
      $last_failed_try = $account->getLastFailedTry() ? $account->getLastFailedTry() : 0;
      $time_diff2 = $current_time - $last_failed_try;
-
-   
-    if($failed_otp_count >= 3 &&  $time_diff2 < 60) { // 300 seconds = 5 minutes
+ 
+    if($failed_otp_count == 2 &&  $time_diff2 < 60) { // 300 seconds = 5 minutes  
+        $remaining_time = 60 - $time_diff2;  // Time left for the countdown
         echo json_encode(array(
             'fail' => false,
             'auth' => false,
-            'emailAuth'=>false,
-            'msg' => "Too many failed attempts. Please wait 5 minutes, then try again."
+            'msg' => "Too many failed attempts. Please wait 5 minutes, then try again.",
+            'time'=> $remaining_time
         )); 
         die;
     }  
     // close
- 
-   
     if($method=="mobile")
     {
         $mobileNo = $account->getCellPhone();
@@ -33422,7 +33418,7 @@ public function resendOtp2(){
     else {
          $email  = $account->getEmail();
          list($name, $domain) = explode('@', $email);
-         // Mask the part before the "@" symbol, leaving the first three characters visible
+         // Mask the part before the "x" symbol, leaving the first three characters visible
          $maskedEmail = substr($name, 0, 3) . str_repeat('x', strlen($name) - 3) . '@' . $domain;
          $msg =  "A 6-digit code has been sent to your email the code will expire in 10 minutes ".$maskedEmail;
     } 

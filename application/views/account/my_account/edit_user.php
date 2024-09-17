@@ -107,6 +107,27 @@ div#logging_in  {
   color:white!important;
 }
 
+#otpResend.ui-state-default {
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        #otpResend.ui-state-disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+div.warning{
+    background: #fff3cd;
+    color: #856404;
+    font-size: 11px;
+    border: 2px solid #bfb9a8;
+    padding: 5px 10px;
+    text-align: center;
+    margin: 5px 0;
+    font-size: 11px;
+    line-height: 17px;
+    font-weight: 700;
+}
  
     </style>
 <h3>
@@ -720,7 +741,19 @@ div#logging_in  {
 
         // Password Reset request
         $("#sendPasswordReset").click(function () {
+            //Hide opt box reset the setting or reset div inside dialog box
+            $("#sendPasswordEmailHelp").dialog('close');  // Ensure it's closed first
+            // Reset form fields or content inside the dialog (optional)
+            $("#sendPasswordEmailHelp form")[0].reset();  // Reset the form if there's one
             $("#sendPasswordEmailHelp").dialog('open'); 
+            var otpResendButton = $("#otpResend");
+            if (otpResendButton.length) {
+            otpResendButton.css("display", "block");  // Use jQuery to set the display to block
+            }
+            $(".Otp_box").hide();
+            $("#msg_error").hide();
+            $("#msg_success").hide();
+            $(".send_varification_code").show();   
         });
 
         $("#sendPasswordEmailHelp").dialog({
@@ -753,8 +786,7 @@ div#logging_in  {
                 $('#sales_report_emails').val('0');
                 $('#sales_report_emails').prop('disabled', true);
                 $('#email_frequency').val('0');
-                $('#email_frequency').prop('disabled', true);
-                
+                $('#email_frequency').prop('disabled', true);                
             }
             else {
                 $('#sales_report_emails').val('1');
@@ -801,7 +833,7 @@ div#logging_in  {
         }
     });
     $("#otpResend").hide();
-    $("#otp-label, #otp-input, #msg_success, #msg_error").hide();
+    $("#otp-label, #otp-input, #msg_success, #msg_error, #timer_count").hide();
     $(".Otp_box").hide();
     $("#logging_error, #logging_in").hide();
     $("#AuthBtn").on("click", function (e) {
@@ -846,17 +878,50 @@ div#logging_in  {
                   $("#logging_error").show();
                   if (data.fail=="false" || data.fail==false) {
                         $("#otpResend").show();
-                        //   $("#msg_success").hide();
+                        $("#msg_success").hide();
                         $("#logging_in").hide();
                         $("#logging_error").hide();
                         $("#msg_error").html(data.msg);
                         $("#msg_error").show();
+                        if(data.time){
+                            $("#msg_error").hide();
+                            $("#timer_count").show();
+                            $("#msg_success").hide();                            
+                            startTimer(data.time); // Start the countdown timer
+                             console.log("call updatetimer function",data.time);
+                        }
                   }
               }
           }
       });
       return false;
   });
+
+  function startTimer(time) {
+            var timerInterval = setInterval(function () {
+                if (time >= 0) {
+                    $("#otpResend").prop('disabled', true).addClass('ui-state-disabled').removeClass('ui-state-default');
+                    $('#timer').text(time + " seconds then try again."); // Update the timer display
+                    time--;  // Decrease time
+                    console.log("timeing decreasing",time);
+                
+
+                } else {
+                    $("#timer_count").hide();
+                    $('#timer').text("You can try again now.");  // Show when the time is up
+                    clearInterval(timerInterval);  // Stop the timer
+                    $("#otpResend").prop('disabled', false).removeClass('ui-state-disabled ui-button-disabled').addClass('ui-state-default')
+                    .attr('aria-disabled', 'false');
+                    $("#sendPasswordEmailHelp form")[0].reset();  // Reset the form if there's one
+                    var otpResendButton = $("#otpResend");
+                    if (otpResendButton.length) {
+                    otpResendButton.css("display", "block");  // Use jQuery to set the display to block
+            }
+
+                }
+            }, 1000);  // Update every second
+        }
+ 
 
 // OTP Resend
 $(document).on("click", ".otpResend, #otpResend", function (e) {
@@ -897,6 +962,14 @@ if (!$("input[name='2way_auth']:checked").val()) {
             $("#msg_error").show();
             $("#logging_error").hide();
             $("#logging_in").hide();
+            if(data.time){
+                            $("#msg_error").hide();
+                            $("#timer_count").show();
+                            $("#msg_success").hide();                            
+                            startTimer(data.time); // Start the countdown timer
+                             console.log("call updatetimer function",data.time);
+                        }
+
           }
       }
   },
@@ -1086,8 +1159,8 @@ return false;
                                 <div style="display:none;" id="logging_error" class="error closeonclick"></div>
                                 <div style="display:none;" id="msg_error" class="error closeonclick"></div>
                                 <div style="display:none;" id="msg_success" class="success closeonclick" style="font-color:green;"></div>
-
-
+                                <div id="timer_count" class="warning">Too many failed attempts. Please wait, You are blocked for: <span id="timer"></span> </div>
+ 
                             </td>
                         </tr>
                     </table>
@@ -1125,3 +1198,5 @@ return false;
     }
 });     
 </script>
+
+ 
