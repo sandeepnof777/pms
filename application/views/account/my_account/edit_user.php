@@ -904,6 +904,7 @@ div.warning{
                     $('#timer').text(time + " seconds then try again."); // Update the timer display
                     time--;  // Decrease time
                     console.log("timeing decreasing",time);
+                    $(".resendVsCode").hide();
                 
 
                 } else {
@@ -916,6 +917,8 @@ div.warning{
                     var otpResendButton = $("#otpResend");
                     if (otpResendButton.length) {
                     otpResendButton.css("display", "block");  // Use jQuery to set the display to block
+                    $(".resendVsCode").show();
+
             }
 
                 }
@@ -963,6 +966,7 @@ if (!$("input[name='2way_auth']:checked").val()) {
             $("#logging_error").hide();
             $("#logging_in").hide();
             if(data.time){
+                            
                             $("#msg_error").hide();
                             $("#timer_count").show();
                             $("#msg_success").hide();                            
@@ -1142,7 +1146,7 @@ return false;
                             <td>
                                 
                                 <button type="submit"class="btn blue-button" id="AuthBtn" style="width: 160px;left: 121px;padding: 3px 10px;font-size: 14px;margin: 0;"><i class="fa fa-fw fa-sign-in"></i>Submit</button>
-                                <div class="otpResend" style="margin-top:12px;"><a href="#">Resend Verification Code</a></div>
+                                <div class="otpResend resendVsCode" style="margin-top:12px;"><a href="#">Resend Verification Code</a></div>
                              </td>
                         </tr>
                     

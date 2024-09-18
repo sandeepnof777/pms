@@ -33346,13 +33346,7 @@ public function otp_validate2() {
                 $this->em->flush();
             }
         } else {
-            if ($failed_otp_count == 2) { // 300 seconds = 5 minutes
-                echo json_encode(array(
-                    'fail' => false,
-                    'msg' => "Your are blocked Please try again next 5 miniutes."
-                ));
-                die;
-            }
+           
             // handle for many wrong attemnt
                 $failed_otp_count++;
                 if($failed_otp_count==3){
