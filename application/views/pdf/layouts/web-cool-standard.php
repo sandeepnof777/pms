@@ -298,7 +298,33 @@
 
         ?>
 
- 
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cool_table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cool_table td, .cool_table th {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        width: 100%;
+        overflow-x: scroll;
+    }
+
+    .cool_table {
+        width: 100%;
+        min-width: 600px; /* Set the min-width to enable scrolling */
+    }
+}
+
 
        #submitAskQuestionModal .modal-dialog, #submitSignModal .modal-dialog{
             width:33%;
@@ -465,18 +491,20 @@
                   padding-left: unset!important; 
             }
  
-            .customer-checklist-table th, td {
+            /* .customer-checklist-table th, td {
                 padding:unset!important;
-            }
+            } */
  
             .customer-checklist-table .span-label {
                 width: 172px!important;
             }
 
             table tr {
-                float:left;
+                /* float:left; */
                 margin-top:5px;
             }
+
+          
 
             .customer-checklist-table .billing-email{
                width: 102px !important;
@@ -2025,7 +2053,8 @@
      
      
         .customer-checklist-table th, td {
-            padding: 8px;
+            /* padding: 8px; */
+            line-height: 2;
             text-align: left;
  
         }
@@ -2041,7 +2070,7 @@
         } 
 
         td.span-data2 {
-            padding-left: 51px;
+            padding-left: 42px;
             text-align: left;
  
         } 
@@ -4065,10 +4094,10 @@ $print_pdf_url = site_url('proposals/live/preview/' . $print_layout . '/plpropos
                             } else {
                                 // Snow proposal
                                 ?>
-                                <div class="table-container table_mg-t-2">
+                                <div class="table-container table_mg-t-2 table-responsive">
                                     <h4 style="margin-top: 0; padding-top: 0; margin-bottom: 0; padding-bottom: 0; font-size:15px">
                                         Service Pricing</h4>
-                                    <table width="100%" class="table" border="0" style="margin-bottom: 0;">
+                                    <table width="100%" class="table cool_table" border="0" style="margin-bottom: 0;">
                                         <thead>
                                         <tr>
                                             <td width="20"><strong>Item</strong></td>

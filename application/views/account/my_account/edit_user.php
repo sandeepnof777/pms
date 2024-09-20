@@ -768,10 +768,8 @@ div.warning{
         });
 
     $('#sales').change(function () {
-        
         handle_sales_report_options()
     });
-
     $('#sales_report_emails').change(function () {
         
         check_sales_report();
@@ -814,16 +812,12 @@ div.warning{
             buttons: {
                 Close: function() {
                     $(this).dialog("close");
-                   // $("#2way_auth").val('0').change(); // Set value to "No"  
                 }
             }
         });
         // Open the OTP Verification Dialog when #2way_auth changes to '1'
-   
-    
     // Initially hide OTP-related fields and messages
     $('#auth_email').prop('checked', true);    
-    // If you're using a custom styling library like Uniform.js or something similar, refresh the state
     if ($.uniform) {
         $.uniform.update('#auth_email');
     }
@@ -866,7 +860,6 @@ div.warning{
                       html: 'We have emailed you instructions for resetting your password. Please check your email.',
                       showCloseButton: true,
                   }).then(function() {
-                      //document.location.href = url;
                       $("#sendPasswordEmailHelp").dialog('close');
                       });
                } else {
@@ -888,7 +881,6 @@ div.warning{
                             $("#timer_count").show();
                             $("#msg_success").hide();                            
                             startTimer(data.time); // Start the countdown timer
-                             console.log("call updatetimer function",data.time);
                         }
                   }
               }
@@ -903,10 +895,7 @@ div.warning{
                     $("#otpResend").prop('disabled', true).addClass('ui-state-disabled').removeClass('ui-state-default');
                     $('#timer').text(time + " seconds then try again."); // Update the timer display
                     time--;  // Decrease time
-                    console.log("timeing decreasing",time);
-                    $(".resendVsCode").hide();
-                
-
+                    $(".resendVsCode").hide();                
                 } else {
                     $("#timer_count").hide();
                     $('#timer').text("You can try again now.");  // Show when the time is up
@@ -918,9 +907,7 @@ div.warning{
                     if (otpResendButton.length) {
                     otpResendButton.css("display", "block");  // Use jQuery to set the display to block
                     $(".resendVsCode").show();
-
             }
-
                 }
             }, 1000);  // Update every second
         }
@@ -928,13 +915,11 @@ div.warning{
 
 // OTP Resend
 $(document).on("click", ".otpResend, #otpResend", function (e) {
-
 e.preventDefault(); // Prevent default form submission behavior
 $("#msg_error").hide();
 $("#logging_error").hide();
 $("#logging_in").show();
 $(".Otp_box").hide();
-
 var method = $("input[name='2way_auth']:checked").val();
 if (!$("input[name='2way_auth']:checked").val()) {
       event.preventDefault(); // Prevent form submission
@@ -966,19 +951,16 @@ if (!$("input[name='2way_auth']:checked").val()) {
             $("#logging_error").hide();
             $("#logging_in").hide();
             if(data.time){
-                            
                             $("#msg_error").hide();
                             $("#timer_count").show();
                             $("#msg_success").hide();                            
                             startTimer(data.time); // Start the countdown timer
-                             console.log("call updatetimer function",data.time);
                         }
 
           }
       }
   },
   error: function (jqXHR, textStatus, errorThrown) {
-      //console.log("Request failed: " + textStatus + " - " + errorThrown);
       $("#logging_error").html("An error occurred. Please try again.");
   }
 });

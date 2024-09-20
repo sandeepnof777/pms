@@ -131,15 +131,12 @@ div.warning{
 <script type="text/javascript">
  
     $(document).ready(function () {
-   
-
         $(document).on("keypress", function (e) {
         if (e.which == 13) {  // 13 is the keycode for the "Enter" key
             e.preventDefault(); // Prevent the default form submission
         }
     });
         $(".Otp_box").hide();  
-       // $("#logging_error, #logging_in").hide();
         $("#otp-label, #otp-input, #msg_success, #msg_error, #timer_count").hide();
         $("#AuthBtn").on("click", function (e) {
             e.preventDefault(); // Prevent default form submission behavior
@@ -233,10 +230,7 @@ div.warning{
     if ($(this).hasClass('otpResend')) {
              $(".Otp_box").show();
              $(".send_varification_code").hide();
-        console.log('Class otpResend clicked');
     } else if ($(this).attr('id') === 'otpResend') {
-        // Click triggered by element with the ID 'otpResend'
-        console.log('ID otpResend clicked');
     }
    // $(".Otp_box").show();
     var method = $("input[name='2way_auth']:checked").val();
@@ -257,15 +251,13 @@ div.warning{
             if (data.auth) {
                 $(".Otp_box").show();
                 $(".send_varification_code").hide();
-
-                 $("#logging_error").hide();
+                $("#logging_error").hide();
                 $("#logging_in").hide();
                 $("#msg_success").html(data.msg);
                 $("#msg_success").show();
 
             } else {
                 if (!data.fail) {
-                     //$("#msg_success").hide();
                      $("#msg_error").text(data.msg);
                      $("#msg_error").show();
                      $("#logging_error").hide();
